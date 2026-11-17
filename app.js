@@ -28,9 +28,15 @@ async function initClient() {
         currentUser = data.user;
         unlockApp();
       } else {
+        authToken = null;
+        currentUser = null;
+        localStorage.removeItem("worksphere_token");
         showAuthGateway();
       }
     } catch (e) {
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem("worksphere_token");
       showAuthGateway();
     }
   } else {
@@ -456,6 +462,12 @@ function renderJobsFeed() {
 // 4. APPLY FOR JOB (PERSISTED IN SQLITE)
 // ==============================================
 function openApplyModalForJob(jobId) {
+  if (!authToken || !currentUser) {
+    showToast("Application submit karne ke liye pehle Login karein.", "warning");
+    showAuthGateway();
+    return;
+  }
+
   const job = cachedJobs.find(j => j.id === jobId);
   if (!job) return;
 
@@ -493,6 +505,12 @@ async function handleApplySubmit(e) {
   e.preventDefault();
   if (!activeApplyingJobId) return;
 
+  if (!authToken) {
+    showToast("Application submit karne ke liye pehle login karein.", "warning");
+    showAuthGateway();
+    return;
+  }
+
   const candidate_name = document.getElementById("applyName").value.trim();
   const candidate_phone = document.getElementById("applyPhone").value.trim();
   const experience = document.getElementById("applyExp").value;
@@ -524,6 +542,16 @@ async function handleApplySubmit(e) {
     });
     const data = await res.json();
 
+    if (res.status === 401 || (data.error && data.error.includes("login"))) {
+      showToast("Aapka login session expire ho gaya tha. Kripya ek baar Sign In karein.", "warning");
+      authToken = null;
+      currentUser = null;
+      localStorage.removeItem("worksphere_token");
+      closeApplyModal();
+      showAuthGateway();
+      return;
+    }
+
     if (data.success) {
       closeApplyModal();
       showToast(`Application ${data.application.id} submitted successfully to ${data.application.company}!`, "success");
@@ -533,7 +561,7 @@ async function handleApplySubmit(e) {
       showToast(data.error || "Submission failed", "warning");
     }
   } catch (err) {
-    showToast("Server connection error", "warning");
+    showToast("Server connection error: " + err.message, "warning");
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<span>Submit Application to SQLite</span><i data-lucide="send" class="w-4 h-4"></i>`;
