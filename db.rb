@@ -20,7 +20,7 @@ module Database
 
   def self.hash_password(password, salt = nil)
     salt ||= SecureRandom.hex(16)
-    hash = OpenSSL::PKCS5.pbkdf2_hmac(password, salt, 20000, 32, OpenSSL::Digest::SHA256.new).unpack1('H*')
+    hash = OpenSSL::PKCS5.pbkdf2_hmac(password, salt, 20000, 32, 'sha256').unpack1('H*')
     [hash, salt]
   end
 
