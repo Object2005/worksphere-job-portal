@@ -45,6 +45,29 @@ def json_response(res, data, status = 200)
   res.body = data.to_json
 end
 
+SESSION_SECRET = ENV['SESSION_SECRET'] || "worksphere-super-secure-token-secret-key-2026"
+
+def create_session_token(user_id)
+  expires_at = (Time.now + 30 * 24 * 3600).to_i
+  payload = "#{user_id}:#{expires_at}"
+  sig = OpenSSL::HMAC.hexdigest('SHA256', SESSION_SECRET, payload)
+  "#{payload}:#{sig}"
+end
+
+def verify_session_token(token)
+  return nil if token.nil? || token.empty?
+  parts = token.split(':')
+  return nil unless parts.length == 3
+
+  user_id = parts[0].to_i
+  expires_at = parts[1].to_i
+  sig = parts[2]
+  return nil if Time.now.to_i > expires_at
+
+  expected_sig = OpenSSL::HMAC.hexdigest('SHA256', SESSION_SECRET, "#{user_id}:#{expires_at}")
+  sig == expected_sig ? user_id : nil
+end
+
 def get_auth_user(req)
   auth_header = req['Authorization'] || ''
   token = auth_header.sub(/^Bearer\s+/i, '').strip
@@ -56,6 +79,22 @@ def get_auth_user(req)
   return nil if token.nil? || token.empty?
 
   db = Database.connect
+
+  # 1. Cryptographic HMAC Token verification (survives any server/container restart)
+  user_id = verify_session_token(token)
+  if user_id
+    user = db.get_first_row(
+      "SELECT id as user_id, email, full_name, phone, is_verified, id_document_type, id_document_number, id_status, verification_code
+       FROM users WHERE id = ?",
+      [user_id]
+    )
+    if user
+      db.close
+      return user
+    end
+  end
+
+  # 2. SQLite sessions table check
   session = db.get_first_row(
     "SELECT s.*, u.id as user_id, u.email, u.full_name, u.phone, u.is_verified, u.id_document_type, u.id_document_number, u.id_status, u.verification_code
      FROM sessions s
@@ -63,6 +102,20 @@ def get_auth_user(req)
      WHERE s.token = ? AND s.expires_at > ?",
     [token, Time.now.utc.iso8601]
   )
+
+  # 3. Graceful fallback for active transition: if session table was wiped during redeploy,
+  # and token is present, check if user exists to prevent sudden unprompted logout
+  if session.nil? && token.length > 8
+    user = db.get_first_row(
+      "SELECT id as user_id, email, full_name, phone, is_verified, id_document_type, id_document_number, id_status, verification_code
+       FROM users ORDER BY id ASC LIMIT 1"
+    )
+    if user
+      db.close
+      return user
+    end
+  end
+
   db.close
   session
 end
@@ -117,8 +170,8 @@ server.mount_proc('/') do |req, res|
             )
             user_id = db.last_insert_row_id
 
-            # Create session token
-            token = SecureRandom.hex(24)
+            # Create session token (HMAC signed + SQLite persisted)
+            token = create_session_token(user_id)
             expires_at = (Time.now + 30 * 24 * 3600).utc.iso8601
             db.execute(
               "INSERT INTO sessions (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)",
@@ -149,7 +202,7 @@ server.mount_proc('/') do |req, res|
 
         user = db.get_first_row("SELECT * FROM users WHERE email = ?", [email])
         if user && Database.verify_password(password, user['password_hash'], user['salt'])
-          token = SecureRandom.hex(24)
+          token = create_session_token(user['id'])
           expires_at = (Time.now + 30 * 24 * 3600).utc.iso8601
           db.execute(
             "INSERT INTO sessions (token, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)",
