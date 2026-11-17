@@ -534,6 +534,52 @@ server.mount_proc('/') do |req, res|
           json_response(res, { success: true, message: 'New Job posted successfully in SQLite!', job_id: job_id })
         end
 
+      # 14. GET /api/admin/overview (Live Admin Database View)
+      elsif path == '/api/admin/overview' && req.request_method == 'GET'
+        users = db.execute("SELECT id, email, full_name, phone, is_verified, id_status, id_document_type, id_document_number, created_at FROM users ORDER BY id DESC").map do |u|
+          {
+            id: u['id'],
+            email: u['email'],
+            full_name: u['full_name'],
+            phone: u['phone'] || 'N/A',
+            is_verified: u['is_verified'],
+            id_status: u['id_status'] || 'Unverified',
+            id_document_type: u['id_document_type'] || 'N/A',
+            id_document_number: u['id_document_number'] || 'N/A',
+            created_at: u['created_at']
+          }
+        end
+
+        applications = db.execute(
+          "SELECT a.id, a.user_id, a.job_id, a.candidate_name, a.candidate_email, a.candidate_phone, a.resume_filename, a.status, a.created_at, j.company, j.title
+           FROM applications a
+           LEFT JOIN jobs j ON a.job_id = j.id
+           ORDER BY a.created_at DESC"
+        ).map do |a|
+          {
+            id: a['id'],
+            candidate_name: a['candidate_name'],
+            candidate_email: a['candidate_email'],
+            candidate_phone: a['candidate_phone'] || 'N/A',
+            company: a['company'] || 'General',
+            title: a['title'] || 'Role',
+            resume_filename: a['resume_filename'] || 'Resume.pdf',
+            status: a['status'] || 'Applied',
+            created_at: a['created_at']
+          }
+        end
+
+        json_response(res, {
+          success: true,
+          stats: {
+            total_users: users.length,
+            total_applications: applications.length,
+            verified_users: users.count { |u| u[:is_verified] == 1 }
+          },
+          users: users,
+          applications: applications
+        })
+
       else
         json_response(res, { success: false, error: "API Endpoint not found: #{path}" }, 404)
       end
