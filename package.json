@@ -1,0 +1,20 @@
+{
+  "name": "worksphere-job-portal",
+  "version": "1.0.0",
+  "description": "Verified Corporate & Tech Job Portal powered by JavaScript and SQLite REST API",
+  "main": "app.js",
+  "scripts": {
+    "start": "ruby server.rb",
+    "test": "ruby test_suite.rb"
+  },
+  "keywords": [
+    "javascript",
+    "job-portal",
+    "careers",
+    "sqlite",
+    "authentication",
+    "rest-api"
+  ],
+  "author": "Object2005",
+  "license": "MIT"
+}
