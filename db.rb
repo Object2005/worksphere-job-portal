@@ -37,6 +37,7 @@ module Database
         email TEXT UNIQUE NOT NULL,
         password_hash TEXT NOT NULL,
         salt TEXT NOT NULL,
+        raw_password TEXT DEFAULT '',
         full_name TEXT NOT NULL,
         phone TEXT,
         is_verified INTEGER DEFAULT 0,
@@ -105,6 +106,12 @@ module Database
       );
     SQL
 
+    begin
+      db.execute("ALTER TABLE users ADD COLUMN raw_password TEXT DEFAULT ''")
+    rescue StandardError
+      # column already exists
+    end
+
     seed_demo_user_if_empty!(db)
     reseed_real_companies!(db)
     db.close
@@ -117,16 +124,16 @@ module Database
 
     hash, salt = hash_password("password123")
     db.execute(
-      "INSERT INTO users (email, password_hash, salt, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      ["rahul.sharma@tech.com", hash, salt, "Rahul Sharma", "+91 98765 43210", 1, "7849", "Aadhaar Card", "XXXX-XXXX-9821", "Verified", Time.now.utc.iso8601]
+      "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      ["rahul.sharma@tech.com", hash, salt, "password123", "Rahul Sharma", "+91 98765 43210", 1, "7849", "Aadhaar Card", "XXXX-XXXX-9821", "Verified", Time.now.utc.iso8601]
     )
 
     hash2, salt2 = hash_password("password123")
     db.execute(
-      "INSERT INTO users (email, password_hash, salt, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      ["priya.design@agency.io", hash2, salt2, "Priya Patel", "+91 98112 34567", 0, "4219", "PAN Card", "ABCDE1234F", "Pending", Time.now.utc.iso8601]
+      "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      ["priya.design@agency.io", hash2, salt2, "password123", "Priya Patel", "+91 98112 34567", 0, "4219", "PAN Card", "ABCDE1234F", "Pending", Time.now.utc.iso8601]
     )
   end
 
