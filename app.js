@@ -1,13 +1,12 @@
 /**
- * WorkSphere Job Portal - Production Client connected to SQLite REST API
+ * Naukri.com Clone - Production Client connected to SQLite REST API
  */
 
-let authToken = localStorage.getItem("worksphere_token") || null;
+let authToken = localStorage.getItem("naukri_auth_token") || localStorage.getItem("worksphere_token") || null;
 let currentUser = null;
 let cachedJobs = [];
 let cachedApplications = [];
 let cachedSaved = [];
-let activeTab = 'jobs';
 let activeApplyingJobId = null;
 
 // Initialize on DOM ready
@@ -16,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 async function initClient() {
-  renderRealCompanyFilterPills();
+  await loadJobsFromApi();
 
   if (authToken) {
     try {
@@ -26,119 +25,388 @@ async function initClient() {
       const data = await res.json();
       if (data.success && data.user) {
         currentUser = data.user;
-        unlockApp();
+        updateNavState(true);
+        loadApplicationsFromApi();
       } else {
         authToken = null;
         currentUser = null;
+        localStorage.removeItem("naukri_auth_token");
         localStorage.removeItem("worksphere_token");
-        showAuthGateway();
+        updateNavState(false);
       }
     } catch (e) {
       authToken = null;
       currentUser = null;
-      localStorage.removeItem("worksphere_token");
-      showAuthGateway();
+      updateNavState(false);
     }
   } else {
-    showAuthGateway();
+    updateNavState(false);
   }
 
   lucide.createIcons();
 }
 
-// ==============================================
-// 1. AUTHENTICATION & SESSION MANAGEMENT
-// ==============================================
-function showAuthGateway() {
-  document.getElementById("authGateway").classList.remove("hidden");
-  document.getElementById("mainApp").classList.add("hidden");
-}
+function updateNavState(isLoggedIn) {
+  const guestControls = document.getElementById("navGuestControls");
+  const userControls = document.getElementById("navUserControls");
+  const adminNavPill = document.getElementById("adminNavPill");
 
-function unlockApp() {
-  document.getElementById("authGateway").classList.add("hidden");
-  document.getElementById("mainApp").classList.remove("hidden");
+  if (isLoggedIn && currentUser) {
+    if (guestControls) guestControls.classList.add("hidden");
+    if (userControls) userControls.classList.remove("hidden");
 
-  // Update nav profile
-  document.getElementById("userNameNav").innerText = currentUser.full_name || currentUser.email;
-  document.getElementById("userAvatar").innerText = (currentUser.full_name || currentUser.email).charAt(0).toUpperCase();
+    const nameElem = document.getElementById("navUserName");
+    const avatarElem = document.getElementById("navUserAvatar");
+    if (nameElem) nameElem.innerText = currentUser.full_name || currentUser.email;
+    if (avatarElem) avatarElem.innerText = (currentUser.full_name || currentUser.email).charAt(0).toUpperCase();
 
-  // ID Verification Badge
-  renderIdBadge();
-
-  // Load live data from SQLite API
-  loadJobsFromApi();
-  loadApplicationsFromApi();
-  loadSavedJobsFromApi();
-  lucide.createIcons();
-}
-
-function renderIdBadge() {
-  const badgeContainer = document.getElementById("userIdBadge");
-  const warnBanner = document.getElementById("unverifiedWarningBanner");
-
-  if (currentUser.is_verified === 1 || currentUser.id_status === 'Verified') {
-    badgeContainer.innerHTML = `
-      <span class="inline-flex items-center gap-1 text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
-        <i data-lucide="check-circle-2" class="w-3 h-3"></i> ID Verified
-      </span>
-    `;
-    warnBanner.classList.add("hidden");
+    // Show or highlight admin pill
+    if (adminNavPill) {
+      if (currentUser.is_admin || (currentUser.email && currentUser.email.includes("admin"))) {
+        adminNavPill.classList.remove("hidden");
+        adminNavPill.className = "inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full text-xs font-black shadow-md transition-all cursor-pointer";
+        adminNavPill.innerHTML = `<i data-lucide="crown" class="w-3.5 h-3.5 text-amber-300"></i> <span class="hidden sm:inline">Admin Console</span>`;
+      } else {
+        adminNavPill.classList.add("hidden");
+      }
+    }
   } else {
-    badgeContainer.innerHTML = `
-      <span class="inline-flex items-center gap-1 text-[10px] font-black text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300 hover:bg-amber-200 transition-colors">
-        <i data-lucide="alert-circle" class="w-3 h-3"></i> Verify ID
-      </span>
-    `;
-    warnBanner.classList.remove("hidden");
+    if (guestControls) guestControls.classList.remove("hidden");
+    if (userControls) userControls.classList.add("hidden");
   }
 
-  // Update hint OTP in modal
-  const hintElem = document.getElementById("hintOtp");
-  if (hintElem && currentUser.verification_code) {
-    hintElem.innerText = currentUser.verification_code;
+  lucide.createIcons();
+}
+
+// ==============================================
+// 1. JOBS DATA & NAUKRI 3-COLUMN RENDERING
+// ==============================================
+async function loadJobsFromApi() {
+  try {
+    const res = await fetch('/api/jobs');
+    const data = await res.json();
+    if (data.success && data.jobs) {
+      cachedJobs = data.jobs;
+      renderNaukriJobCards(cachedJobs);
+    }
+  } catch (err) {
+    console.error("Jobs load error:", err);
   }
 }
 
-function switchAuthMode(mode) {
-  const tabLogin = document.getElementById("authTabLogin");
-  const tabRegister = document.getElementById("authTabRegister");
-  const formLogin = document.getElementById("loginForm");
-  const formRegister = document.getElementById("registerForm");
+function renderNaukriJobCards(jobs) {
+  const container = document.getElementById("naukriJobCardsContainer");
+  const countElem = document.getElementById("jobFeedCount");
+  if (!container) return;
+
+  if (countElem) {
+    countElem.innerText = `1 - ${jobs.length} of ${jobs.length}`;
+  }
+
+  if (jobs.length === 0) {
+    container.innerHTML = `
+      <div class="bg-white rounded-2xl p-10 text-center border border-slate-200">
+        <i data-lucide="search-x" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
+        <h4 class="text-sm font-bold text-slate-700">No jobs match your filter criteria</h4>
+        <p class="text-xs text-slate-400 mt-1">Try resetting your filters or search with another keyword.</p>
+        <button onclick="resetAllFilters()" class="mt-4 px-4 py-2 bg-[#275df5] text-white text-xs font-bold rounded-full">Reset Filters</button>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  container.innerHTML = jobs.map(j => {
+    // Star reviews matching Screenshot 2
+    const ratingStr = (j.company === 'Starbucks') ? '★ 4.1 | 998 Reviews' : '★ 4.2 | 1,420 Reviews';
+    
+    // Default logo fallback
+    let logoHtml = j.logo_svg;
+    if (!logoHtml || logoHtml.length < 10) {
+      logoHtml = `<div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-700 text-xs">${j.initials || j.company.slice(0, 2).toUpperCase()}</div>`;
+    }
+
+    const postedAge = j.posted_date ? "3+ weeks ago" : "Just now";
+
+    return `
+      <div class="naukri-card bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs">
+        
+        <!-- Top Row: Title + Company Logo on Right -->
+        <div class="flex items-start justify-between gap-3">
+          <div class="space-y-1">
+            <h3 onclick="openApplyModalForJob(${j.id})" class="text-[15px] font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug">
+              ${escapeHtml(j.title)}
+            </h3>
+            <div class="flex items-center gap-2 text-xs text-slate-600 font-semibold">
+              <span class="text-slate-800 font-bold">${escapeHtml(j.company)}</span>
+              <span class="inline-flex items-center gap-1 text-[11px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                ${ratingStr}
+              </span>
+            </div>
+          </div>
+
+          <!-- Official Company Logo on Right (Matching Screenshot 2) -->
+          <div class="w-11 h-11 shrink-0 rounded-2xl bg-white border border-slate-100 shadow-2xs flex items-center justify-center p-1.5">
+            ${logoHtml}
+          </div>
+        </div>
+
+        <!-- Experience, Salary & Location Metadata Row -->
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 font-medium mt-3 pb-2.5">
+          <span class="flex items-center gap-1 text-slate-700">
+            <i data-lucide="briefcase" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>${j.category.includes('Fresher') || j.title.includes('Barista') ? '0-2 Yrs' : '0-3 Yrs'}</span>
+          </span>
+          <span class="flex items-center gap-1 text-slate-700">
+            <i data-lucide="indian-rupee" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>${escapeHtml(j.salary)}</span>
+          </span>
+          <span class="flex items-center gap-1 text-slate-700">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>${escapeHtml(j.location)}</span>
+          </span>
+        </div>
+
+        <!-- Description Snippet (Matching Screenshot 2) -->
+        <div class="pt-2 border-t border-slate-100 flex items-start gap-2 text-xs text-slate-500 leading-relaxed">
+          <i data-lucide="file-text" class="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5"></i>
+          <p class="line-clamp-2">${escapeHtml(j.description)}</p>
+        </div>
+
+        <!-- Skills Tags (Matching Screenshot 2) -->
+        <div class="flex flex-wrap items-center gap-1.5 mt-3">
+          ${(j.skills || []).slice(0, 6).map(s => `
+            <span class="text-[11px] font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded-md transition-colors">
+              ${escapeHtml(s)}
+            </span>
+          `).join("")}
+        </div>
+
+        <!-- Card Footer: Posted Age + Save & Apply -->
+        <div class="flex items-center justify-between pt-3 mt-3 border-t border-slate-100 text-xs">
+          <span class="text-slate-400 text-[11px] font-medium">${postedAge}</span>
+          <div class="flex items-center gap-2">
+            <button onclick="toggleSaveJobInApi(${j.id})" title="Save Job" class="p-2 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-bold">
+              <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+              <span>Save</span>
+            </button>
+            <button onclick="openApplyModalForJob(${j.id})" class="px-4 py-1.5 bg-[#275df5] hover:bg-[#185adb] text-white font-bold rounded-full text-xs shadow-xs transition-all cursor-pointer">
+              Apply on Naukri
+            </button>
+          </div>
+        </div>
+
+      </div>
+    `;
+  }).join("");
+
+  lucide.createIcons();
+}
+
+// ==============================================
+// 2. SEARCH & FILTERING ENGINE
+// ==============================================
+function triggerNaukriLiveFilter() {
+  const kw = (document.getElementById("naukriSearchKeyword")?.value || '').toLowerCase().trim();
+  const exp = (document.getElementById("naukriSearchExp")?.value || '').toLowerCase().trim();
+  const loc = (document.getElementById("naukriSearchLocation")?.value || '').toLowerCase().trim();
+
+  const filtered = cachedJobs.filter(j => {
+    const matchKw = !kw || 
+      j.title.toLowerCase().includes(kw) || 
+      j.company.toLowerCase().includes(kw) || 
+      (j.skills || []).some(s => s.toLowerCase().includes(kw));
+
+    const matchExp = !exp || 
+      (exp === 'fresher' && (j.title.toLowerCase().includes('barista') || j.salary_value <= 15)) ||
+      (exp === '1-3' && j.salary_value <= 35) ||
+      (exp === '3-5' && j.salary_value <= 55) ||
+      (exp === '5+' && j.salary_value > 40);
+
+    const matchLoc = !loc || j.location.toLowerCase().includes(loc);
+
+    return matchKw && matchExp && matchLoc;
+  });
+
+  renderNaukriJobCards(filtered);
+}
+
+function handleExpSliderChange(val) {
+  const label = document.getElementById("sliderExpValue");
+  if (label) {
+    label.innerText = val == 0 ? "All Levels" : `${val}+ Yrs`;
+  }
+  triggerSidebarFilter();
+}
+
+function triggerSidebarFilter() {
+  const expVal = parseInt(document.getElementById("expSlider")?.value || "0", 10);
+  
+  // Salary checkboxes
+  const selectedSalaries = Array.from(document.querySelectorAll(".salary-filter:checked")).map(el => el.value);
+  // Location checkboxes
+  const selectedLocs = Array.from(document.querySelectorAll(".loc-filter:checked")).map(el => el.value.toLowerCase());
+  // Work mode checkboxes
+  const selectedModes = Array.from(document.querySelectorAll(".mode-filter:checked")).map(el => el.value.toLowerCase());
+
+  const filtered = cachedJobs.filter(j => {
+    // Experience check
+    if (expVal > 0) {
+      if (expVal >= 5 && j.salary_value < 35) return false;
+    }
+
+    // Salary check
+    if (selectedSalaries.length > 0) {
+      const match = selectedSalaries.some(s => {
+        if (s === '0-3') return j.salary_value <= 10;
+        if (s === '3-6') return j.salary_value >= 5 && j.salary_value <= 20;
+        if (s === '6-10') return j.salary_value >= 15 && j.salary_value <= 40;
+        if (s === '10+') return j.salary_value >= 35;
+        return true;
+      });
+      if (!match) return false;
+    }
+
+    // Location check
+    if (selectedLocs.length > 0) {
+      const matchLoc = selectedLocs.some(l => j.location.toLowerCase().includes(l));
+      if (!matchLoc) return false;
+    }
+
+    // Work Mode check
+    if (selectedModes.length > 0) {
+      const matchMode = selectedModes.some(m => j.work_mode.toLowerCase().includes(m));
+      if (!matchMode) return false;
+    }
+
+    return true;
+  });
+
+  renderNaukriJobCards(filtered);
+}
+
+function filterByChip(term) {
+  scrollToJobFeed();
+  const kw = term.toLowerCase();
+
+  const filtered = cachedJobs.filter(j => {
+    if (kw === 'remote') return j.work_mode.toLowerCase().includes('remote') || j.location.toLowerCase().includes('remote');
+    if (kw === 'fresher') return j.title.toLowerCase().includes('barista') || j.salary_value <= 15;
+    if (kw === 'mnc') return ['Google', 'Microsoft', 'Amazon', 'Starbucks', 'Apple', 'Meta', 'Netflix', 'NVIDIA'].includes(j.company);
+    if (kw === 'software') return j.skills.some(s => ['python', 'react', 'typescript', 'go', 'azure', 'cloud'].includes(s.toLowerCase()));
+    if (kw === 'banking') return j.title.toLowerCase().includes('payment') || j.category.toLowerCase().includes('finance');
+    if (kw === 'hospitality') return j.company.toLowerCase().includes('starbucks') || j.category.toLowerCase().includes('hospitality');
+    return j.title.toLowerCase().includes(kw) || j.category.toLowerCase().includes(kw) || j.company.toLowerCase().includes(kw);
+  });
+
+  renderNaukriJobCards(filtered);
+}
+
+function filterByPill(pill) {
+  document.querySelectorAll(".category-pill").forEach(el => {
+    el.className = "category-pill px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl shrink-0 cursor-pointer";
+  });
+  if (event && event.target) {
+    event.target.className = "category-pill active px-4 py-2 bg-[#275df5] text-white rounded-xl shadow-xs shrink-0 cursor-pointer";
+  }
+
+  if (pill === 'All') {
+    renderNaukriJobCards(cachedJobs);
+  } else {
+    filterByChip(pill);
+  }
+}
+
+function filterByCompany(companyName) {
+  scrollToJobFeed();
+  const filtered = cachedJobs.filter(j => j.company.toLowerCase().includes(companyName.toLowerCase()));
+  renderNaukriJobCards(filtered);
+}
+
+function resetAllFilters() {
+  const kw = document.getElementById("naukriSearchKeyword");
+  const exp = document.getElementById("naukriSearchExp");
+  const loc = document.getElementById("naukriSearchLocation");
+  const slider = document.getElementById("expSlider");
+  const sliderLabel = document.getElementById("sliderExpValue");
+
+  if (kw) kw.value = '';
+  if (exp) exp.value = '';
+  if (loc) loc.value = '';
+  if (slider) slider.value = '0';
+  if (sliderLabel) sliderLabel.innerText = 'All Levels';
+
+  document.querySelectorAll("input[type=checkbox]").forEach(c => c.checked = false);
+  renderNaukriJobCards(cachedJobs);
+  showToast("All filters have been reset to default.", "info");
+}
+
+function scrollToJobFeed() {
+  const el = document.getElementById("jobFeedSection");
+  if (el) el.scrollIntoView({ behavior: 'smooth' });
+}
+
+function goToHome() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resetAllFilters();
+}
+
+// ==============================================
+// 3. AUTHENTICATION & LOGIN / REGISTER MODAL
+// ==============================================
+function openAuthModal(mode = 'login') {
+  const modal = document.getElementById("authModal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  switchAuthTab(mode);
+  lucide.createIcons();
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById("authModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function switchAuthTab(mode) {
+  const tabLogin = document.getElementById("modalTabBtnLogin");
+  const tabRegister = document.getElementById("modalTabBtnRegister");
+  const formLogin = document.getElementById("naukriLoginForm");
+  const formRegister = document.getElementById("naukriRegisterForm");
 
   if (mode === 'login') {
-    tabLogin.className = "flex-1 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-white shadow-sm transition-all";
-    tabRegister.className = "flex-1 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all";
+    tabLogin.className = "flex-1 py-2 rounded-xl text-xs font-bold text-[#275df5] bg-white shadow-2xs transition-all cursor-pointer";
+    tabRegister.className = "flex-1 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all cursor-pointer";
     formLogin.classList.remove("hidden");
     formRegister.classList.add("hidden");
   } else {
-    tabRegister.className = "flex-1 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-white shadow-sm transition-all";
-    tabLogin.className = "flex-1 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all";
+    tabRegister.className = "flex-1 py-2 rounded-xl text-xs font-bold text-[#ff7555] bg-white shadow-2xs transition-all cursor-pointer";
+    tabLogin.className = "flex-1 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all cursor-pointer";
     formRegister.classList.remove("hidden");
     formLogin.classList.add("hidden");
   }
   lucide.createIcons();
 }
 
-function fillDemoCredentials(email, pass) {
-  switchAuthMode('login');
-  document.getElementById("loginEmail").value = email;
-  document.getElementById("loginPassword").value = pass;
-  showToast(`Credentials filled for ${email}. Click Sign In!`, "info");
+function fillAdminLogin() {
+  switchAuthTab('login');
+  document.getElementById("loginEmailInput").value = "admin@naukri.com";
+  document.getElementById("loginPassInput").value = "admin123";
+  showToast("Admin credentials filled! Click Sign In to open Master Console.", "info");
 }
 
 function togglePassVisibility(id) {
   const el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
+  if (el) el.type = el.type === 'password' ? 'text' : 'password';
 }
 
-async function handleLoginSubmit(e) {
+async function handleNaukriLoginSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
-  const password = document.getElementById("loginPassword").value;
+  const email = (document.getElementById("loginEmailInput").value || '').trim().toLowerCase();
+  const password = document.getElementById("loginPassInput").value;
   const btn = document.getElementById("loginSubmitBtn");
 
   btn.disabled = true;
-  btn.innerText = "Authenticating with SQLite...";
+  btn.innerText = "Signing in to Naukri...";
 
   try {
     const res = await fetch('/api/auth/login', {
@@ -148,36 +416,45 @@ async function handleLoginSubmit(e) {
     });
     const data = await res.json();
 
-    if (data.success) {
+    if (data.success && data.user) {
       authToken = data.token;
       currentUser = data.user;
+      localStorage.setItem("naukri_auth_token", authToken);
       localStorage.setItem("worksphere_token", authToken);
-      unlockApp();
-      showToast(`Welcome back, ${currentUser.full_name}!`, "success");
+
+      closeAuthModal();
+      updateNavState(true);
+
+      if (currentUser.is_admin || (currentUser.email && currentUser.email.includes("admin"))) {
+        showToast("Welcome Admin! Opening Master Database Console...", "success");
+        setTimeout(() => openAdminModal(), 400);
+      } else {
+        showToast(`Welcome back to Naukri, ${currentUser.full_name}!`, "success");
+      }
     } else {
-      showToast(data.error || "Login failed", "warning");
+      showToast(data.error || "Login failed. Check your email & password.", "warning");
     }
   } catch (err) {
-    showToast("Server connection error", "warning");
+    showToast("Server connection error: " + err.message, "warning");
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<span>Sign In with Email & Password</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+    btn.innerHTML = `<span>Sign In to Naukri</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
     lucide.createIcons();
   }
 }
 
-async function handleRegisterSubmit(e) {
+async function handleNaukriRegisterSubmit(e) {
   e.preventDefault();
-  const full_name = document.getElementById("regFullName").value.trim();
-  const email = document.getElementById("regEmail").value.trim().toLowerCase();
-  const password = document.getElementById("regPassword").value;
-  const phone = document.getElementById("regPhone").value.trim();
-  const id_document_type = document.getElementById("regDocType").value;
-  const id_document_number = document.getElementById("regDocNumber").value.trim();
+  const full_name = document.getElementById("regFullNameInput").value.trim();
+  const email = document.getElementById("regEmailInput").value.trim().toLowerCase();
+  const password = document.getElementById("regPassInput").value;
+  const phone = document.getElementById("regPhoneInput").value.trim();
+  const id_document_type = document.getElementById("regDocTypeInput").value;
+  const id_document_number = document.getElementById("regDocNumInput").value.trim();
   const btn = document.getElementById("regSubmitBtn");
 
   btn.disabled = true;
-  btn.innerText = "Creating Account in SQLite...";
+  btn.innerText = "Creating Candidate Account...";
 
   try {
     const res = await fetch('/api/auth/register', {
@@ -187,20 +464,30 @@ async function handleRegisterSubmit(e) {
     });
     const data = await res.json();
 
-    if (data.success) {
+    if (data.success && data.user) {
       authToken = data.token;
       currentUser = data.user;
+      localStorage.setItem("naukri_auth_token", authToken);
       localStorage.setItem("worksphere_token", authToken);
-      unlockApp();
-      showToast(`Account created! Welcome, ${currentUser.full_name}!`, "success");
+
+      closeAuthModal();
+      updateNavState(true);
+      showToast(`Account created successfully! Welcome, ${currentUser.full_name}!`, "success");
     } else {
-      showToast(data.error || "Registration failed", "warning");
+      // Duplicate Email Prevention Feedback
+      if (res.status === 409 || (data.error && data.error.includes("pehle se registered"))) {
+        showToast("Yeh email pehle se registered hai! Kripya Login karein.", "warning");
+        switchAuthTab('login');
+        document.getElementById("loginEmailInput").value = email;
+      } else {
+        showToast(data.error || "Registration failed", "warning");
+      }
     }
   } catch (err) {
-    showToast("Server connection error: " + err.message, "warning");
+    showToast("Server error: " + err.message, "warning");
   } finally {
     btn.disabled = false;
-    btn.innerHTML = `<span>Create Account & Verify</span><i data-lucide="check" class="w-4 h-4"></i>`;
+    btn.innerHTML = `<span>Register Now & Apply Free</span><i data-lucide="check" class="w-4 h-4"></i>`;
     lucide.createIcons();
   }
 }
@@ -216,596 +503,20 @@ async function handleLogout() {
 
     authToken = null;
     currentUser = null;
+    localStorage.removeItem("naukri_auth_token");
     localStorage.removeItem("worksphere_token");
-    showAuthGateway();
+    updateNavState(false);
     showToast("Logged out successfully.", "info");
-    lucide.createIcons();
   }
 }
 
 // ==============================================
-// 2. CANDIDATE ID VERIFICATION
-// ==============================================
-function openVerifyIdModal() {
-  if (currentUser) {
-    document.getElementById("modalDocType").value = currentUser.id_document_type || "Aadhaar Card";
-    document.getElementById("modalDocNumber").value = currentUser.id_document_number || "";
-    document.getElementById("hintOtp").innerText = currentUser.verification_code || "5829";
-  }
-  document.getElementById("verifyIdModal").classList.remove("hidden");
-  lucide.createIcons();
-}
-
-function closeVerifyIdModal() {
-  document.getElementById("verifyIdModal").classList.add("hidden");
-}
-
-function autoFillMyOtp() {
-  if (currentUser && currentUser.verification_code) {
-    document.getElementById("modalVerifyCode").value = currentUser.verification_code;
-  }
-}
-
-async function handleIdVerifySubmit(e) {
-  e.preventDefault();
-  const id_document_type = document.getElementById("modalDocType").value;
-  const id_document_number = document.getElementById("modalDocNumber").value.trim();
-  const verification_code = document.getElementById("modalVerifyCode").value.trim();
-
-  try {
-    const res = await fetch('/api/auth/verify-id', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify({ id_document_type, id_document_number, verification_code })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      currentUser = data.user;
-      closeVerifyIdModal();
-      renderIdBadge();
-      loadJobsFromApi();
-      loadApplicationsFromApi();
-      showToast("Candidate ID Verified Successfully in SQLite!", "success");
-    } else {
-      showToast(data.error || "ID Verification failed", "warning");
-    }
-  } catch (err) {
-    showToast("Server connection error", "warning");
-  }
-}
-
-// ==============================================
-// 3. REAL JOBS DIRECTORY (SQLITE BACKEND)
-// ==============================================
-function renderRealCompanyFilterPills() {
-  const container = document.getElementById("companyPills");
-  const companies = [
-    "ALL", "Google", "Microsoft", "Amazon", "Apple", "Meta", "NVIDIA", "Netflix", 
-    "Spotify", "Uber", "Stripe", "Airbnb", "Salesforce", "Tesla", "Swiggy", 
-    "Razorpay", "Zomato", "Flipkart", "Adobe", "Tata Consultancy Services (TCS)", "CRED", "Goldman Sachs", "PhonePe"
-  ];
-  
-  container.innerHTML = companies.map(c => `
-    <button 
-      onclick="filterCompanyPill('${c}')"
-      class="company-pill text-[10px] font-bold px-2 py-1 rounded-lg transition-all ${c === 'ALL' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}"
-      data-comp="${c}"
-    >
-      ${c === 'Tata Consultancy Services (TCS)' ? 'TCS' : c}
-    </button>
-  `).join("");
-}
-
-let activeCompanyFilter = "ALL";
-
-function filterCompanyPill(comp) {
-  activeCompanyFilter = comp;
-  document.querySelectorAll(".company-pill").forEach(p => {
-    if (p.getAttribute("data-comp") === comp) {
-      p.className = "company-pill text-[10px] font-bold px-2 py-1 rounded-lg transition-all bg-indigo-600 text-white shadow-sm";
-    } else {
-      p.className = "company-pill text-[10px] font-bold px-2 py-1 rounded-lg transition-all bg-slate-100 text-slate-700 hover:bg-slate-200";
-    }
-  });
-  loadJobsFromApi();
-}
-
-function triggerSearch() {
-  loadJobsFromApi();
-}
-
-function resetFilters() {
-  document.getElementById("searchKeyword").value = "";
-  document.getElementById("filterLocation").value = "ALL";
-  document.querySelector('input[name="catFilter"][value="ALL"]').checked = true;
-  document.querySelector('input[name="modeFilter"][value="ALL"]').checked = true;
-  filterCompanyPill("ALL");
-  document.getElementById("sortSelector").value = "newest";
-  loadJobsFromApi();
-}
-
-async function loadJobsFromApi() {
-  const keyword = (document.getElementById("searchKeyword") ? document.getElementById("searchKeyword").value : '').trim();
-  const location = document.getElementById("filterLocation") ? document.getElementById("filterLocation").value : 'ALL';
-  const catRadio = document.querySelector('input[name="catFilter"]:checked');
-  const category = catRadio ? catRadio.value : 'ALL';
-  const modeRadio = document.querySelector('input[name="modeFilter"]:checked');
-  const mode = modeRadio ? modeRadio.value : 'ALL';
-  const sort = document.getElementById("sortSelector") ? document.getElementById("sortSelector").value : 'newest';
-
-  const queryParams = new URLSearchParams({
-    q: keyword,
-    category: category,
-    work_mode: mode,
-    company: activeCompanyFilter,
-    sort: sort
-  });
-
-  try {
-    const res = await fetch(`/api/jobs?${queryParams.toString()}`);
-    const data = await res.json();
-    if (data.success) {
-      cachedJobs = data.jobs;
-      document.getElementById("liveJobsCountHeader").innerText = cachedJobs.length;
-      document.getElementById("jobsResultCount").innerText = `Showing ${cachedJobs.length} Real Verified Positions (from SQLite)`;
-      renderJobsFeed();
-    }
-  } catch (err) {
-    document.getElementById("jobsResultCount").innerText = "Unable to fetch jobs from database";
-  }
-}
-
-function renderJobsFeed() {
-  const container = document.getElementById("jobsFeed");
-  if (!container) return;
-
-  if (cachedJobs.length === 0) {
-    container.innerHTML = `
-      <div class="bg-white p-10 rounded-3xl border border-slate-200 text-center">
-        <i data-lucide="search-x" class="w-10 h-10 text-slate-300 mx-auto mb-2"></i>
-        <h4 class="text-sm font-bold text-slate-700">Koi Job Opening Nahi Mili</h4>
-        <p class="text-xs text-slate-400 mt-1">Filters reset karein ya doosra search term try karein.</p>
-      </div>
-    `;
-    lucide.createIcons();
-    return;
-  }
-
-  container.innerHTML = cachedJobs.map(job => {
-    const hasApplied = cachedApplications.some(app => app.job_id === job.id);
-    const isSaved = cachedSaved.some(s => s.id === job.id);
-
-    return `
-      <div class="job-card bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm relative transition-all space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          
-          <div class="flex items-start gap-3.5 flex-1">
-            <div class="w-12 h-12 rounded-2xl ${job.logo_bg} flex items-center justify-center font-black text-lg shrink-0 border shadow-xs overflow-hidden">
-              ${job.logo_svg ? job.logo_svg : job.initials}
-            </div>
-            
-            <div class="space-y-1 flex-1">
-              <div class="flex flex-wrap items-center gap-2">
-                <span class="text-xs font-black text-slate-800 tracking-tight flex items-center gap-1">
-                  ${job.company}
-                  <span class="inline-flex items-center text-[9px] font-black text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-full border border-emerald-300" title="Verified Real Corporate Employer">
-                    Verified Employer ✓
-                  </span>
-                </span>
-                <span class="text-slate-300">•</span>
-                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${job.work_mode === 'Remote' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600'}">
-                  ${job.work_mode}
-                </span>
-                <span class="text-[11px] text-slate-400 font-medium">${job.job_type}</span>
-                <a href="${job.official_url}" target="_blank" class="text-[10px] text-indigo-600 hover:underline flex items-center gap-0.5 font-bold">
-                  Official Career Portal <i data-lucide="external-link" class="w-2.5 h-2.5"></i>
-                </a>
-              </div>
-
-              <h4 class="text-base font-extrabold text-slate-900 hover:text-indigo-600 transition-colors">
-                ${job.title}
-              </h4>
-
-              <div class="flex flex-wrap items-center gap-3 text-xs pt-0.5">
-                <span class="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-                  ${job.salary}
-                </span>
-                <span class="text-slate-500 flex items-center gap-1">
-                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i> ${job.location}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex items-center sm:flex-col justify-end gap-2 shrink-0">
-            <button onclick="toggleSaveJobInApi(${job.id})" class="p-2 rounded-xl text-slate-400 hover:text-amber-500 hover:bg-amber-50 transition-all ${isSaved ? '!text-amber-500 bg-amber-50' : ''}" title="Save Job">
-              <i data-lucide="bookmark" class="w-4 h-4 ${isSaved ? 'fill-amber-500' : ''}"></i>
-            </button>
-
-            ${hasApplied ? `
-              <span class="px-4 py-2 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-xl border border-emerald-200 flex items-center gap-1">
-                <i data-lucide="check" class="w-3.5 h-3.5"></i> Applied
-              </span>
-            ` : `
-              <button onclick="openApplyModalForJob(${job.id})" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer">
-                <span>Apply Now</span>
-                <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-              </button>
-            `}
-          </div>
-
-        </div>
-
-        <p class="text-xs text-slate-500 leading-relaxed">${job.description}</p>
-
-        <!-- Skills Tags -->
-        <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-          <div class="flex flex-wrap gap-1.5">
-            ${job.skills.map(s => `<span class="text-[10px] font-semibold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">${s}</span>`).join("")}
-          </div>
-          <span class="text-[11px] text-slate-400 font-medium">Full benefits & stock included</span>
-        </div>
-
-      </div>
-    `;
-  }).join("");
-
-  lucide.createIcons();
-}
-
-// ==============================================
-// 4. APPLY FOR JOB (PERSISTED IN SQLITE)
-// ==============================================
-function openApplyModalForJob(jobId) {
-  if (!authToken || !currentUser) {
-    showToast("Application submit karne ke liye pehle Login karein.", "warning");
-    showAuthGateway();
-    return;
-  }
-
-  const job = cachedJobs.find(j => j.id === jobId);
-  if (!job) return;
-
-  activeApplyingJobId = jobId;
-  document.getElementById("applyModalTitle").innerText = job.title;
-  document.getElementById("applyModalCompany").innerText = `${job.company} • ${job.location}`;
-  document.getElementById("applyModalInitials").innerText = job.initials;
-  
-  if (currentUser) {
-    document.getElementById("applyApplicantEmail").innerText = currentUser.email;
-    document.getElementById("applyName").value = currentUser.full_name || "";
-    document.getElementById("applyPhone").value = currentUser.phone || "";
-
-    const ind = document.getElementById("applyIdVerifiedIndicator");
-    if (currentUser.is_verified === 1) {
-      ind.className = "text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full text-[10px]";
-      ind.innerText = "Candidate ID Verified ✓";
-    } else {
-      ind.className = "text-amber-700 font-bold bg-amber-100 px-2 py-0.5 rounded-full text-[10px]";
-      ind.innerText = "ID Unverified (Click to Verify)";
-      ind.onclick = openVerifyIdModal;
-    }
-  }
-
-  document.getElementById("applyModal").classList.remove("hidden");
-  lucide.createIcons();
-}
-
-function closeApplyModal() {
-  document.getElementById("applyModal").classList.add("hidden");
-  activeApplyingJobId = null;
-}
-
-async function handleApplySubmit(e) {
-  e.preventDefault();
-  if (!activeApplyingJobId) return;
-
-  if (!authToken) {
-    showToast("Application submit karne ke liye pehle login karein.", "warning");
-    showAuthGateway();
-    return;
-  }
-
-  const candidate_name = document.getElementById("applyName").value.trim();
-  const candidate_phone = document.getElementById("applyPhone").value.trim();
-  const experience = document.getElementById("applyExp").value;
-  const portfolio_url = document.getElementById("applyPortfolio").value.trim();
-  const cover_note = document.getElementById("applyCoverNote").value.trim();
-  const fileInput = document.getElementById("applyResumeFile");
-  const resume_filename = fileInput.files[0] ? fileInput.files[0].name : "Resume.pdf";
-  const btn = document.getElementById("applySubmitBtn");
-
-  btn.disabled = true;
-  btn.innerText = "Submitting to SQLite Database...";
-
-  try {
-    const res = await fetch('/api/applications', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
-      body: JSON.stringify({
-        job_id: activeApplyingJobId,
-        candidate_name,
-        candidate_phone,
-        experience,
-        portfolio_url,
-        cover_note,
-        resume_filename
-      })
-    });
-    const data = await res.json();
-
-    if (res.status === 401 || (data.error && data.error.includes("login"))) {
-      showToast("Aapka login session expire ho gaya tha. Kripya ek baar Sign In karein.", "warning");
-      authToken = null;
-      currentUser = null;
-      localStorage.removeItem("worksphere_token");
-      closeApplyModal();
-      showAuthGateway();
-      return;
-    }
-
-    if (data.success) {
-      closeApplyModal();
-      showToast(`Application ${data.application.id} submitted successfully to ${data.application.company}!`, "success");
-      loadApplicationsFromApi();
-      loadJobsFromApi();
-    } else {
-      showToast(data.error || "Submission failed", "warning");
-    }
-  } catch (err) {
-    showToast("Server connection error: " + err.message, "warning");
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = `<span>Submit Application to SQLite</span><i data-lucide="send" class="w-4 h-4"></i>`;
-    lucide.createIcons();
-  }
-}
-
-// ==============================================
-// 5. APPLICATIONS & SAVED JOBS (FROM SQLITE)
-// ==============================================
-async function loadApplicationsFromApi() {
-  if (!authToken) return;
-  try {
-    const res = await fetch('/api/applications', {
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      cachedApplications = data.applications;
-      const badge = document.getElementById("badgeAppliedCount");
-      if (cachedApplications.length > 0) {
-        badge.innerText = cachedApplications.length;
-        badge.classList.remove("hidden");
-      } else {
-        badge.classList.add("hidden");
-      }
-      renderApplicationsFeed();
-    }
-  } catch (e) {}
-}
-
-function renderApplicationsFeed() {
-  const container = document.getElementById("applicationsFeed");
-  if (!container) return;
-
-  if (cachedApplications.length === 0) {
-    container.innerHTML = `
-      <div class="bg-white p-10 rounded-3xl border border-slate-200 text-center">
-        <i data-lucide="send" class="w-10 h-10 text-indigo-400 mx-auto mb-2"></i>
-        <h4 class="text-sm font-bold text-slate-800">Abhi Tak Koi Job Apply Nahi Ki</h4>
-        <p class="text-xs text-slate-500 mt-1">Openings tab me jayein aur apni pasand ki company me 'Apply Now' click karein.</p>
-      </div>
-    `;
-    lucide.createIcons();
-    return;
-  }
-
-  container.innerHTML = cachedApplications.map(app => `
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-black text-indigo-600 uppercase tracking-wider">${app.company}</span>
-            <span class="text-slate-300">•</span>
-            <span class="font-mono text-xs font-bold text-slate-600">${app.id}</span>
-            ${app.id_verified_badge === 1 ? '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.2 rounded-full">ID Verified ✓</span>' : ''}
-          </div>
-          <h4 class="text-base font-extrabold text-slate-900 mt-0.5">${app.title}</h4>
-          <p class="text-[11px] text-slate-400 mt-0.5">Location: ${app.location} • Applied: ${app.created_at.substring(0, 10)}</p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl">
-            ● Status: ${app.status}
-          </span>
-          <button onclick="withdrawApplicationInApi('${app.id}')" class="text-xs font-bold text-rose-600 hover:bg-rose-50 px-2 py-1 rounded-lg transition-colors">
-            Withdraw
-          </button>
-        </div>
-      </div>
-
-      <!-- Pipeline Tracker -->
-      <div class="grid grid-cols-4 gap-2 text-center text-[10px] font-bold">
-        <div class="p-2 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">1. Submitted ✓</div>
-        <div class="p-2 rounded-xl bg-indigo-50 text-indigo-800 border border-indigo-200">2. Under Review...</div>
-        <div class="p-2 rounded-xl bg-slate-50 text-slate-400 border border-slate-200">3. Shortlist</div>
-        <div class="p-2 rounded-xl bg-slate-50 text-slate-400 border border-slate-200">4. Final Offer</div>
-      </div>
-    </div>
-  `).join("");
-
-  lucide.createIcons();
-}
-
-async function withdrawApplicationInApi(appId) {
-  if (confirm("Kya aap sach me yeh application withdraw karna chahte hain?")) {
-    try {
-      const res = await fetch(`/api/applications/${appId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${authToken}` }
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast("Application withdrawn successfully from SQLite.", "info");
-        loadApplicationsFromApi();
-        loadJobsFromApi();
-      }
-    } catch (e) {}
-  }
-}
-
-async function loadSavedJobsFromApi() {
-  if (!authToken) return;
-  try {
-    const res = await fetch('/api/saved-jobs', {
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      cachedSaved = data.jobs;
-      const badge = document.getElementById("badgeSavedCount");
-      if (cachedSaved.length > 0) {
-        badge.innerText = cachedSaved.length;
-        badge.classList.remove("hidden");
-      } else {
-        badge.classList.add("hidden");
-      }
-      renderSavedFeed();
-    }
-  } catch (e) {}
-}
-
-function renderSavedFeed() {
-  const container = document.getElementById("savedJobsFeed");
-  if (!container) return;
-
-  if (cachedSaved.length === 0) {
-    container.innerHTML = `
-      <div class="col-span-2 bg-white p-10 rounded-3xl border border-slate-200 text-center">
-        <i data-lucide="bookmark" class="w-10 h-10 text-amber-400 mx-auto mb-2"></i>
-        <h4 class="text-sm font-bold text-slate-800">Koi Saved Job Nahi Hai</h4>
-        <p class="text-xs text-slate-500 mt-1">Jobs par bookmark button click karke aap jobs save kar sakte hain.</p>
-      </div>
-    `;
-    lucide.createIcons();
-    return;
-  }
-
-  container.innerHTML = cachedSaved.map(job => `
-    <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
-      <div>
-        <div class="flex items-start justify-between">
-          <span class="text-xs font-black text-indigo-600 uppercase">${job.company}</span>
-          <button onclick="toggleSaveJobInApi(${job.id})" class="text-amber-500 hover:text-slate-400 p-1">
-            <i data-lucide="bookmark" class="w-4 h-4 fill-amber-500"></i>
-          </button>
-        </div>
-        <h4 class="text-base font-bold text-slate-900 mt-1">${job.title}</h4>
-        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${job.description}</p>
-        <span class="inline-block mt-2 font-bold text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
-          ${job.salary} • ${job.location}
-        </span>
-      </div>
-
-      <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-end">
-        <button onclick="openApplyModalForJob(${job.id})" class="px-3.5 py-1.5 bg-indigo-600 text-white text-xs font-bold rounded-xl">
-          Apply Now
-        </button>
-      </div>
-    </div>
-  `).join("");
-
-  lucide.createIcons();
-}
-
-async function toggleSaveJobInApi(jobId) {
-  if (!authToken) {
-    showToast("Please login first to bookmark jobs", "warning");
-    return;
-  }
-  try {
-    const res = await fetch(`/api/jobs/${jobId}/save`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast(data.message, "info");
-      loadSavedJobsFromApi();
-      loadJobsFromApi();
-    }
-  } catch (e) {}
-}
-
-// ==============================================
-// 6. NAVIGATION TABS
-// ==============================================
-function switchTab(tab) {
-  activeTab = tab;
-
-  document.querySelectorAll(".nav-btn").forEach(b => {
-    b.className = "nav-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center gap-2";
-  });
-
-  const activeBtn = document.getElementById(`nav-${tab}`);
-  if (activeBtn) {
-    activeBtn.className = "nav-btn active px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 bg-indigo-50 transition-all flex items-center gap-2";
-  }
-
-  ['jobs', 'applications', 'saved'].forEach(t => {
-    const el = document.getElementById(`tab-${t}`);
-    if (el) el.classList.add("hidden");
-  });
-
-  const target = document.getElementById(`tab-${tab}`);
-  if (target) target.classList.remove("hidden");
-
-  if (tab === 'jobs') loadJobsFromApi();
-  if (tab === 'applications') loadApplicationsFromApi();
-  if (tab === 'saved') loadSavedJobsFromApi();
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  lucide.createIcons();
-}
-
-// ==============================================
-// 7. TOAST NOTIFICATIONS
-// ==============================================
-function showToast(message, type = "info") {
-  const container = document.getElementById("toastBox");
-  const toast = document.createElement("div");
-
-  let bgClass = "bg-slate-900 text-white";
-  if (type === "success") bgClass = "bg-emerald-600 text-white";
-  if (type === "warning") bgClass = "bg-amber-600 text-white";
-
-  toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold ${bgClass} transition-all duration-300 transform translate-y-3 opacity-0`;
-  toast.innerHTML = `<span>${message}</span>`;
-
-  container.appendChild(toast);
-  setTimeout(() => { toast.classList.remove("translate-y-3", "opacity-0"); }, 10);
-  setTimeout(() => {
-    toast.classList.add("translate-y-3", "opacity-0");
-    setTimeout(() => toast.remove(), 300);
-  }, 3500);
-}
-
-// ==============================================
-// 8. ADMIN SQLITE DATABASE VIEWER
+// 4. ADMIN SQLITE DATABASE CONSOLE
 // ==============================================
 function openAdminModal() {
   if (!authToken || !currentUser) {
-    showToast("Admin Database dekhne ke liye pehle Login karein.", "warning");
-    showAuthGateway();
+    showToast("Admin Console dekhne ke liye pehle Login karein.", "warning");
+    openAuthModal('login');
     return;
   }
   const modal = document.getElementById("adminModal");
@@ -829,13 +540,13 @@ function switchAdminTab(tab) {
   if (tab === 'users') {
     if (usersTab) usersTab.classList.remove("hidden");
     if (appsTab) appsTab.classList.add("hidden");
-    if (btnUsers) btnUsers.className = "pb-3 px-4 text-xs font-bold text-indigo-600 border-b-2 border-indigo-600 transition-all flex items-center gap-2";
-    if (btnApps) btnApps.className = "pb-3 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all flex items-center gap-2";
+    if (btnUsers) btnUsers.className = "pb-3 px-4 text-xs font-bold text-[#275df5] border-b-2 border-[#275df5] transition-all flex items-center gap-2 cursor-pointer";
+    if (btnApps) btnApps.className = "pb-3 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all flex items-center gap-2 cursor-pointer";
   } else {
     if (usersTab) usersTab.classList.add("hidden");
     if (appsTab) appsTab.classList.remove("hidden");
-    if (btnUsers) btnUsers.className = "pb-3 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all flex items-center gap-2";
-    if (btnApps) btnApps.className = "pb-3 px-4 text-xs font-bold text-indigo-600 border-b-2 border-indigo-600 transition-all flex items-center gap-2";
+    if (btnUsers) btnUsers.className = "pb-3 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all flex items-center gap-2 cursor-pointer";
+    if (btnApps) btnApps.className = "pb-3 px-4 text-xs font-bold text-[#275df5] border-b-2 border-[#275df5] transition-all flex items-center gap-2 cursor-pointer";
   }
   lucide.createIcons();
 }
@@ -858,7 +569,7 @@ async function fetchAdminData() {
     if (document.getElementById("adminTabUsersBadge")) document.getElementById("adminTabUsersBadge").innerText = data.stats.total_users;
     if (document.getElementById("adminTabAppsBadge")) document.getElementById("adminTabAppsBadge").innerText = data.stats.total_applications;
 
-    // Render Users Table
+    // Render Users Table with EMAIL & PASSWORD
     const usersBody = document.getElementById("adminUsersTableBody");
     if (usersBody) {
       if (data.users.length === 0) {
@@ -866,7 +577,7 @@ async function fetchAdminData() {
       } else {
         usersBody.innerHTML = data.users.map(u => {
           const verifiedBadge = u.is_verified === 1 
-            ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800"><i data-lucide="check-circle" class="w-3 h-3"></i> Verified (${escapeHtml(u.id_document_type)})</span>`
+            ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800"><i data-lucide="check-circle" class="w-3 h-3"></i> Verified</span>`
             : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>`;
           
           const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
@@ -875,7 +586,7 @@ async function fetchAdminData() {
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-3 px-3 font-mono font-bold text-slate-500">#${u.id}</td>
               <td class="py-3 px-3 font-bold text-slate-900">${escapeHtml(u.full_name || 'N/A')}</td>
-              <td class="py-3 px-3 font-semibold text-indigo-700 bg-indigo-50/50 rounded">${escapeHtml(u.email)}</td>
+              <td class="py-3 px-3 font-semibold text-[#275df5] bg-blue-50/50 rounded">${escapeHtml(u.email)}</td>
               <td class="py-3 px-3">
                 <span class="inline-flex items-center gap-1 font-mono text-xs font-extrabold px-2 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-md">
                   <i data-lucide="key" class="w-3 h-3 text-amber-600"></i>
@@ -902,7 +613,7 @@ async function fetchAdminData() {
           return `
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="py-3 px-3 font-bold text-slate-900">${escapeHtml(a.candidate_name)}</td>
-              <td class="py-3 px-3 font-semibold text-indigo-700">${escapeHtml(a.candidate_email)}</td>
+              <td class="py-3 px-3 font-semibold text-[#275df5]">${escapeHtml(a.candidate_email)}</td>
               <td class="py-3 px-3 font-bold text-slate-800">${escapeHtml(a.company)}</td>
               <td class="py-3 px-3 text-slate-600">${escapeHtml(a.title)}</td>
               <td class="py-3 px-3 font-mono text-slate-500 text-[11px]">${escapeHtml(a.resume_filename)}</td>
@@ -918,4 +629,177 @@ async function fetchAdminData() {
     console.error("Admin fetch error:", err);
     showToast("Error connecting to SQLite Admin API", "warning");
   }
+}
+
+// ==============================================
+// 5. APPLICATION SUBMISSION & SAVED JOBS
+// ==============================================
+function openApplyModalForJob(jobId) {
+  if (!authToken || !currentUser) {
+    showToast("Application submit karne ke liye pehle Login karein.", "warning");
+    openAuthModal('login');
+    return;
+  }
+
+  const job = cachedJobs.find(j => j.id === jobId);
+  if (!job) return;
+
+  activeApplyingJobId = jobId;
+  document.getElementById("applyModalTitle").innerText = job.title;
+  document.getElementById("applyModalCompany").innerText = `${job.company} • ${job.location}`;
+
+  if (currentUser) {
+    document.getElementById("applyName").value = currentUser.full_name || "";
+    document.getElementById("applyPhone").value = currentUser.phone || "";
+  }
+
+  document.getElementById("applyModal").classList.remove("hidden");
+  lucide.createIcons();
+}
+
+function closeApplyModal() {
+  document.getElementById("applyModal").classList.add("hidden");
+  activeApplyingJobId = null;
+}
+
+async function handleApplySubmit(e) {
+  e.preventDefault();
+  if (!activeApplyingJobId) return;
+
+  if (!authToken) {
+    showToast("Application submit karne ke liye pehle login karein.", "warning");
+    openAuthModal('login');
+    return;
+  }
+
+  const candidate_name = document.getElementById("applyName").value.trim();
+  const candidate_phone = document.getElementById("applyPhone").value.trim();
+  const experience = document.getElementById("applyExp").value;
+  const cover_note = document.getElementById("applyCoverNote").value.trim();
+  const fileInput = document.getElementById("applyResumeFile");
+  const resume_filename = fileInput.files[0] ? fileInput.files[0].name : "Resume.pdf";
+  const btn = document.getElementById("applySubmitBtn");
+
+  btn.disabled = true;
+  btn.innerText = "Submitting to SQLite Database...";
+
+  try {
+    const res = await fetch('/api/applications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify({
+        job_id: activeApplyingJobId,
+        candidate_name,
+        candidate_phone,
+        experience,
+        cover_note,
+        resume_filename
+      })
+    });
+    const data = await res.json();
+
+    if (res.status === 401 || (data.error && data.error.includes("login"))) {
+      showToast("Aapka login session expire ho gaya tha. Kripya ek baar Sign In karein.", "warning");
+      authToken = null;
+      currentUser = null;
+      closeApplyModal();
+      openAuthModal('login');
+      return;
+    }
+
+    if (data.success) {
+      closeApplyModal();
+      showToast(`Application successfully submitted to ${data.application.company}!`, "success");
+      loadApplicationsFromApi();
+    } else {
+      showToast(data.error || "Submission failed", "warning");
+    }
+  } catch (err) {
+    showToast("Server connection error: " + err.message, "warning");
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<span>Submit Application on Naukri</span><i data-lucide="send" class="w-4 h-4"></i>`;
+    lucide.createIcons();
+  }
+}
+
+async function loadApplicationsFromApi() {
+  if (!authToken) return;
+  try {
+    const res = await fetch('/api/applications', {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const data = await res.json();
+    if (data.success && data.applications) {
+      cachedApplications = data.applications;
+      const badge = document.getElementById("navAppBadge");
+      if (badge) badge.innerText = cachedApplications.length;
+    }
+  } catch (err) {}
+}
+
+function openMyApplicationsTab() {
+  if (cachedApplications.length === 0) {
+    showToast("Aapne abhi tak kisi job me apply nahi kiya hai.", "info");
+  } else {
+    showToast(`Aapne total ${cachedApplications.length} companies me apply kiya hai!`, "success");
+  }
+}
+
+async function toggleSaveJobInApi(jobId) {
+  if (!authToken) {
+    showToast("Job bookmark karne ke liye pehle Login karein.", "warning");
+    openAuthModal('login');
+    return;
+  }
+  try {
+    const res = await fetch(`/api/jobs/${jobId}/save`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast(data.message, "info");
+    }
+  } catch (e) {}
+}
+
+function openVerifyIdModal() {
+  showToast("Naukri Candidate ID Verification is active. Verified candidates receive 3x recruiter visibility.", "info");
+}
+
+// ==============================================
+// 6. UTILITIES & TOASTS
+// ==============================================
+function showToast(message, type = "info") {
+  const container = document.getElementById("toastBox");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  let bgClass = "bg-slate-900 text-white";
+  if (type === "success") bgClass = "bg-emerald-600 text-white";
+  if (type === "warning") bgClass = "bg-[#ff7555] text-white";
+
+  toast.className = `pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold ${bgClass} transition-all duration-300 transform translate-y-3 opacity-0`;
+  toast.innerHTML = `<span>${message}</span>`;
+
+  container.appendChild(toast);
+  setTimeout(() => { toast.classList.remove("translate-y-3", "opacity-0"); }, 10);
+  setTimeout(() => {
+    toast.classList.add("translate-y-3", "opacity-0");
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
