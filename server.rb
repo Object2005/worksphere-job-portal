@@ -5,7 +5,7 @@ require 'securerandom'
 require 'time'
 require_relative 'db'
 
-PORT = 8080
+PORT = (ENV['PORT'] || 8080).to_i
 ROOT_DIR = File.expand_path(File.dirname(__FILE__))
 
 # Ensure database is initialized
