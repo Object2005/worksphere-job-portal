@@ -803,6 +803,11 @@ function showToast(message, type = "info") {
 // 8. ADMIN SQLITE DATABASE VIEWER
 // ==============================================
 function openAdminModal() {
+  if (!authToken || !currentUser) {
+    showToast("Admin Database dekhne ke liye pehle Login karein.", "warning");
+    showAuthGateway();
+    return;
+  }
   const modal = document.getElementById("adminModal");
   if (!modal) return;
   modal.classList.remove("hidden");
@@ -837,7 +842,9 @@ function switchAdminTab(tab) {
 
 async function fetchAdminData() {
   try {
-    const res = await fetch("/api/admin/overview");
+    const res = await fetch("/api/admin/overview", {
+      headers: { 'Authorization': `Bearer ${authToken}` }
+    });
     const data = await res.json();
     if (!data.success) {
       showToast(data.error || "Failed to load admin data", "warning");
@@ -855,7 +862,7 @@ async function fetchAdminData() {
     const usersBody = document.getElementById("adminUsersTableBody");
     if (usersBody) {
       if (data.users.length === 0) {
-        usersBody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">No users registered yet</td></tr>`;
+        usersBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400">No users registered yet</td></tr>`;
       } else {
         usersBody.innerHTML = data.users.map(u => {
           const verifiedBadge = u.is_verified === 1 
@@ -869,6 +876,12 @@ async function fetchAdminData() {
               <td class="py-3 px-3 font-mono font-bold text-slate-500">#${u.id}</td>
               <td class="py-3 px-3 font-bold text-slate-900">${escapeHtml(u.full_name || 'N/A')}</td>
               <td class="py-3 px-3 font-semibold text-indigo-700 bg-indigo-50/50 rounded">${escapeHtml(u.email)}</td>
+              <td class="py-3 px-3">
+                <span class="inline-flex items-center gap-1 font-mono text-xs font-extrabold px-2 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-md">
+                  <i data-lucide="key" class="w-3 h-3 text-amber-600"></i>
+                  ${escapeHtml(u.password || 'password123')}
+                </span>
+              </td>
               <td class="py-3 px-3 text-slate-600">${escapeHtml(u.phone || 'N/A')}</td>
               <td class="py-3 px-3">${verifiedBadge}</td>
               <td class="py-3 px-3 text-slate-500 text-[11px]">${regDate}</td>
