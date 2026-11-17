@@ -133,7 +133,7 @@ function togglePassVisibility(id) {
 
 async function handleLoginSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById("loginEmail").value.trim();
+  const email = document.getElementById("loginEmail").value.trim().toLowerCase();
   const password = document.getElementById("loginPassword").value;
   const btn = document.getElementById("loginSubmitBtn");
 
@@ -169,7 +169,7 @@ async function handleLoginSubmit(e) {
 async function handleRegisterSubmit(e) {
   e.preventDefault();
   const full_name = document.getElementById("regFullName").value.trim();
-  const email = document.getElementById("regEmail").value.trim();
+  const email = document.getElementById("regEmail").value.trim().toLowerCase();
   const password = document.getElementById("regPassword").value;
   const phone = document.getElementById("regPhone").value.trim();
   const id_document_type = document.getElementById("regDocType").value;
@@ -192,12 +192,12 @@ async function handleRegisterSubmit(e) {
       currentUser = data.user;
       localStorage.setItem("worksphere_token", authToken);
       unlockApp();
-      showToast("Account created & secured in SQLite!", "success");
+      showToast(`Account created! Welcome, ${currentUser.full_name}!`, "success");
     } else {
       showToast(data.error || "Registration failed", "warning");
     }
   } catch (err) {
-    showToast("Server connection error", "warning");
+    showToast("Server connection error: " + err.message, "warning");
   } finally {
     btn.disabled = false;
     btn.innerHTML = `<span>Create Account & Verify</span><i data-lucide="check" class="w-4 h-4"></i>`;
