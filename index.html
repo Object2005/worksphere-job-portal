@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkSphere | Production Tech & Corporate Careers Portal</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased min-h-screen selection:bg-indigo-500 selection:text-white">
+
+  <!-- ============================================== -->
+  <!-- 1. MANDATORY AUTHENTICATION GATEWAY (LOGIN/SIGNUP) -->
+  <!-- ============================================== -->
+  <div id="authGateway" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-xl p-4 overflow-y-auto">
+    <div class="relative w-full max-w-md my-8 p-7 sm:p-9 bg-white rounded-3xl shadow-2xl border border-slate-100 transition-all">
+      
+      <!-- Brand Logo -->
+      <div class="text-center mb-6">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-500/25 mb-3">
+          <i data-lucide="shield-check" class="w-7 h-7"></i>
+        </div>
+        <h2 class="text-2xl font-black tracking-tight text-slate-900">WorkSphere Careers</h2>
+        <p class="text-xs text-slate-500 mt-1">Verified Corporate & Tech Job Portal (SQLite Secured)</p>
+      </div>
+
+      <!-- Auth Switch Tabs: Login vs Register -->
+      <div class="flex items-center bg-slate-100 p-1 rounded-2xl mb-6">
+        <button onclick="switchAuthMode('login')" id="authTabLogin" class="flex-1 py-2 rounded-xl text-xs font-bold text-indigo-700 bg-white shadow-sm transition-all">
+          Sign In (Login)
+        </button>
+        <button onclick="switchAuthMode('register')" id="authTabRegister" class="flex-1 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all">
+          Create Account
+        </button>
+      </div>
+
+      <!-- FORM 1: LOGIN (EMAIL + PASSWORD) -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Email Address *
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+              <i data-lucide="mail" class="w-4 h-4"></i>
+            </span>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              required 
+              placeholder="rahul.sharma@tech.com" 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Password *
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+              <i data-lucide="lock" class="w-4 h-4"></i>
+            </span>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              required 
+              placeholder="••••••••••••" 
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+            <button type="button" onclick="togglePassVisibility('loginPassword')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
+              <i data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          id="loginSubmitBtn"
+          class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Sign In with Email & Password</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <!-- FORM 2: REGISTER (FULL NAME, EMAIL, PASSWORD, ID VERIFICATION SETUP) -->
+      <form id="registerForm" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+            Full Name *
+          </label>
+          <input 
+            type="text" 
+            id="regFullName" 
+            required 
+            placeholder="e.g. Rahul Sharma" 
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+            Email Address *
+          </label>
+          <input 
+            type="email" 
+            id="regEmail" 
+            required 
+            placeholder="apna.email@domain.com" 
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+              Password *
+            </label>
+            <input 
+              type="password" 
+              id="regPassword" 
+              required 
+              minlength="6"
+              placeholder="Min 6 chars" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+              Phone Number *
+            </label>
+            <input 
+              type="tel" 
+              id="regPhone" 
+              required 
+              placeholder="+91 98765 43210" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <!-- ID Verification Document Upload / Input -->
+        <div class="p-3 bg-indigo-50/70 border border-indigo-100 rounded-2xl">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-900 mb-2">
+            <i data-lucide="badge-check" class="w-4 h-4 text-indigo-600"></i>
+            <span>Candidate ID Verification (Optional for Verified Badge)</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <select id="regDocType" class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none">
+                <option value="Aadhaar Card">Aadhaar Card</option>
+                <option value="PAN Card">PAN Card</option>
+                <option value="Passport">Passport</option>
+                <option value="Driver's License">Driver's License</option>
+              </select>
+            </div>
+            <div>
+              <input 
+                type="text" 
+                id="regDocNumber" 
+                placeholder="XXXX-XXXX-1234" 
+                class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none"
+              />
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1.5">ID verification candidate ko 3x hiring preference aur verified green badge deta hai.</p>
+        </div>
+
+        <button 
+          type="submit" 
+          id="regSubmitBtn"
+          class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Create Account & Verify</span>
+          <i data-lucide="check" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+      <!-- Quick 1-Click Demo Profiles (Pre-seeded in SQLite) -->
+      <div class="mt-6 pt-5 border-t border-slate-100">
+        <p class="text-xs text-slate-400 font-semibold text-center mb-2.5">Quick Demo Logins (Pre-seeded in SQLite):</p>
+        <div class="flex flex-col gap-1.5">
+          <button onclick="fillDemoCredentials('rahul.sharma@tech.com', 'password123')" class="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-xs text-left flex items-center justify-between transition-all">
+            <span class="font-medium text-slate-700 truncate">rahul.sharma@tech.com (Pass: password123)</span>
+            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">ID Verified ✓</span>
+          </button>
+          <button onclick="fillDemoCredentials('priya.design@agency.io', 'password123')" class="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 text-xs text-left flex items-center justify-between transition-all">
+            <span class="font-medium text-slate-700 truncate">priya.design@agency.io (Pass: password123)</span>
+            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">Pending ID</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- 2. MAIN APPLICATION (AUTHENTICATED)            -->
+  <!-- ============================================== -->
+  <div id="mainApp" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Top Sticky Header -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          
+          <!-- Logo -->
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20">
+              <i data-lucide="briefcase" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <span class="text-lg font-black tracking-tight text-slate-900">WorkSphere</span>
+              <span class="hidden sm:inline-block ml-1.5 text-xs font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md border border-emerald-200/60">
+                ● SQLite Live
+              </span>
+            </div>
+          </div>
+
+          <!-- Navigation Tabs -->
+          <nav class="hidden md:flex items-center space-x-1">
+            <button onclick="switchTab('jobs')" id="nav-jobs" class="nav-btn active px-4 py-2 rounded-xl text-xs font-bold text-indigo-600 bg-indigo-50 transition-all flex items-center gap-2">
+              <i data-lucide="compass" class="w-4 h-4"></i> Real Openings (<span id="liveJobsCountHeader">15</span>)
+            </button>
+            <button onclick="switchTab('applications')" id="nav-applications" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center gap-2">
+              <i data-lucide="send" class="w-4 h-4"></i> My Applications
+              <span id="badgeAppliedCount" class="hidden text-[10px] bg-indigo-600 text-white rounded-full px-2 py-0.2 font-extrabold">0</span>
+            </button>
+            <button onclick="switchTab('saved')" id="nav-saved" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center gap-2">
+              <i data-lucide="bookmark" class="w-4 h-4"></i> Saved Jobs
+              <span id="badgeSavedCount" class="hidden text-[10px] bg-slate-200 text-slate-800 rounded-full px-2 py-0.2 font-extrabold">0</span>
+            </button>
+          </nav>
+
+          <!-- Right User Controls -->
+          <div class="flex items-center gap-3">
+            <button onclick="openPostJobModal()" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200/80 rounded-xl hover:bg-indigo-100 transition-all">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Post Job
+            </button>
+
+            <!-- User ID Verification Status Badge & Pill -->
+            <div class="flex items-center gap-2 pl-2 pr-3 py-1 bg-slate-100 rounded-full border border-slate-200">
+              <div id="userAvatar" class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                R
+              </div>
+              <div class="text-left hidden sm:block max-w-[130px] truncate">
+                <p id="userNameNav" class="text-xs font-bold text-slate-900 truncate">Rahul Sharma</p>
+              </div>
+              <div id="userIdBadge" class="cursor-pointer" onclick="openVerifyIdModal()">
+                <!-- Populated dynamically: Verified ✓ or Verify ID -->
+              </div>
+              <button onclick="handleLogout()" title="Logout" class="text-slate-400 hover:text-rose-600 p-1 transition-colors">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- Top ID Verification Action Banner (If unverified) -->
+    <div id="unverifiedWarningBanner" class="hidden bg-gradient-to-r from-amber-500 to-orange-500 text-white py-2 px-4 text-center text-xs font-medium shadow-inner flex items-center justify-center gap-3">
+      <span>⚠️ Aapka Candidate ID abhi tak Verify nahi hua hai. Verified candidate ban kar 3x zyada interviews paayein!</span>
+      <button onclick="openVerifyIdModal()" class="px-3 py-1 bg-white text-amber-900 rounded-lg font-bold text-[11px] shadow-sm hover:bg-amber-50 transition-all">
+        Complete ID Verification
+      </button>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- TAB 1: REAL COMPANIES JOB OPENINGS             -->
+    <!-- ============================================== -->
+    <main id="tab-jobs" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
+      <!-- Hero Banner -->
+      <div class="relative overflow-hidden rounded-3xl bg-slate-900 text-white p-8 sm:p-12 mb-8 shadow-xl">
+        <div class="relative z-10 max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-emerald-300 text-xs font-bold mb-4 border border-white/15">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            Real Verified Company Openings (Google, Microsoft, Amazon, Meta, Apple...)
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+            Apply to World-Class Companies Directly.
+          </h1>
+          <p class="mt-3 text-slate-300 text-sm sm:text-base font-normal">
+            Aapka data local SQLite database me securely save ho raha hai. 1-click me direct apply karein.
+          </p>
+
+          <!-- Search Bar -->
+          <div class="mt-8 bg-white p-2.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 items-center text-slate-900">
+            <div class="flex-1 flex items-center gap-2.5 w-full px-3 py-2">
+              <i data-lucide="search" class="w-5 h-5 text-slate-400 shrink-0"></i>
+              <input 
+                type="text" 
+                id="searchKeyword" 
+                oninput="triggerSearch()"
+                placeholder="Search job title, skills (Python, React) ya company..." 
+                class="w-full text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none bg-transparent"
+              />
+            </div>
+            <div class="h-8 w-px bg-slate-200 hidden sm:block"></div>
+            <div class="flex items-center gap-2 w-full sm:w-auto px-3 py-2">
+              <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 shrink-0"></i>
+              <select id="filterLocation" onchange="triggerSearch()" class="text-xs sm:text-sm font-semibold text-slate-700 bg-transparent focus:outline-none cursor-pointer">
+                <option value="ALL">All Locations</option>
+                <option value="Remote">Remote Only</option>
+                <option value="Bangalore">Bangalore, IN</option>
+                <option value="Hyderabad">Hyderabad, IN</option>
+                <option value="Mumbai">Mumbai, IN</option>
+                <option value="London">London, UK</option>
+              </select>
+            </div>
+            <button onclick="triggerSearch()" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold rounded-xl shadow-md transition-all">
+              Search Openings
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Main Layout: Sidebar Filters + Jobs Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        
+        <!-- Left Filter Panel -->
+        <aside class="lg:col-span-1 space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm sticky top-24">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-2">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-indigo-600"></i> Filters
+              </h3>
+              <button onclick="resetFilters()" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                Reset
+              </button>
+            </div>
+
+            <!-- Category -->
+            <div class="mb-5">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Category</label>
+              <div class="space-y-1.5" id="categoryRadios">
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="catFilter" value="ALL" checked onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>All Categories</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="catFilter" value="Engineering" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>Engineering & Cloud</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="catFilter" value="Design" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>Product & Design</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="catFilter" value="Data" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>Data & AI</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="catFilter" value="Product" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>Product Management</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Work Mode -->
+            <div class="mb-5">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Work Mode</label>
+              <div class="space-y-1.5">
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="modeFilter" value="ALL" checked onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>All Modes</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="modeFilter" value="Remote" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>Remote Only</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="modeFilter" value="Hybrid" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>Hybrid</span>
+                </label>
+                <label class="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                  <input type="radio" name="modeFilter" value="On-site" onchange="triggerSearch()" class="accent-indigo-600">
+                  <span>On-site</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Real Companies Quick Pills -->
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Real Companies</label>
+              <div class="flex flex-wrap gap-1" id="companyPills">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+
+          </div>
+        </aside>
+
+        <!-- Right Main Column: Jobs Feed -->
+        <section class="lg:col-span-3 space-y-4">
+          
+          <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center gap-2">
+              <span class="text-xs sm:text-sm font-bold text-slate-900" id="jobsResultCount">Loading jobs from SQLite...</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs font-semibold text-slate-500">Sort:</label>
+              <select id="sortSelector" onchange="triggerSearch()" class="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                <option value="newest">Newest First</option>
+                <option value="salary-high">Highest Salary</option>
+                <option value="company-az">Company (A-Z)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Jobs Container -->
+          <div id="jobsFeed" class="space-y-4">
+            <!-- Rendered from SQLite database -->
+          </div>
+
+        </section>
+
+      </div>
+    </main>
+
+
+    <!-- ============================================== -->
+    <!-- TAB 2: MY APPLICATIONS (FROM SQLITE)           -->
+    <!-- ============================================== -->
+    <main id="tab-applications" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mb-6 flex items-center justify-between">
+        <div>
+          <h2 class="text-2xl font-black text-slate-900">My Applications (SQLite Live)</h2>
+          <p class="text-xs text-slate-500 mt-1">Applications are tracked directly in the company HR hiring pipeline.</p>
+        </div>
+      </div>
+
+      <div id="applicationsFeed" class="space-y-4">
+        <!-- Rendered from SQLite -->
+      </div>
+    </main>
+
+
+    <!-- ============================================== -->
+    <!-- TAB 3: SAVED JOBS (FROM SQLITE)                -->
+    <!-- ============================================== -->
+    <main id="tab-saved" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="mb-6">
+        <h2 class="text-2xl font-black text-slate-900">Saved Positions</h2>
+        <p class="text-xs text-slate-500 mt-1">Jobs you bookmarked to review or apply later.</p>
+      </div>
+
+      <div id="savedJobsFeed" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Rendered from SQLite -->
+      </div>
+    </main>
+
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL: CANDIDATE ID VERIFICATION               -->
+  <!-- ============================================== -->
+  <div id="verifyIdModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100">
+      
+      <div class="flex items-start justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+            <i data-lucide="badge-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">Candidate ID Verification</h3>
+            <p class="text-xs text-slate-500">Official Identity Verification (SQLite Secured)</p>
+          </div>
+        </div>
+        <button onclick="closeVerifyIdModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleIdVerifySubmit(event)" class="space-y-4">
+        <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-100 text-xs text-emerald-900">
+          <p class="font-bold">✨ Benefits of Verified Candidate ID:</p>
+          <ul class="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-emerald-800">
+            <li>Verified Green Badge on every job application</li>
+            <li>Priority shortlisting by Google, Microsoft & Amazon recruiters</li>
+            <li>Instant resume pass through automated filters</li>
+          </ul>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Select Government ID Document *
+          </label>
+          <select id="modalDocType" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none">
+            <option value="Aadhaar Card">Aadhaar Card (UIDAI)</option>
+            <option value="PAN Card">PAN Card (Income Tax Dept)</option>
+            <option value="Passport">Passport</option>
+            <option value="Driver's License">Driver's License</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Document ID Number *
+          </label>
+          <input 
+            type="text" 
+            id="modalDocNumber" 
+            required 
+            placeholder="e.g. 5421-9842-1092 ya ABCDE1234F" 
+            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+            Verification Code (Sent to Email)
+          </label>
+          <div class="flex items-center gap-2">
+            <input 
+              type="text" 
+              id="modalVerifyCode" 
+              placeholder="4-digit OTP" 
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            <button type="button" onclick="autoFillMyOtp()" class="shrink-0 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-indigo-600 text-xs font-bold rounded-xl">
+              Auto Code: <span id="hintOtp">----</span>
+            </button>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Verify ID & Unlock Verified Badge</span>
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+
+  <!-- ============================================== -->
+  <!-- MODAL: APPLICATION SUBMISSION MODAL            -->
+  <!-- ============================================== -->
+  <div id="applyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 my-8">
+      
+      <div class="flex items-start justify-between pb-3 border-b border-slate-100 mb-4">
+        <div class="flex items-center gap-3">
+          <div id="applyModalInitials" class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-xl flex items-center justify-center">
+            G
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900" id="applyModalTitle">Applying for Role</h3>
+            <p class="text-xs font-medium text-slate-500" id="applyModalCompany">Company • Location</p>
+          </div>
+        </div>
+        <button onclick="closeApplyModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleApplySubmit(event)" class="space-y-3.5">
+        
+        <!-- Verified ID Status Pill -->
+        <div class="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+          <span class="text-slate-600">Applicant: <strong id="applyApplicantEmail">email@domain.com</strong></span>
+          <span id="applyIdVerifiedIndicator" class="text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full text-[10px]">
+            ID Verified ✓
+          </span>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Full Name *</label>
+          <input type="text" id="applyName" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Phone Number *</label>
+            <input type="tel" id="applyPhone" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Total Experience *</label>
+            <select id="applyExp" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none">
+              <option value="0-1 years">Fresher (0-1 yrs)</option>
+              <option value="1-3 years">1 - 3 Years</option>
+              <option value="3-5 years" selected>3 - 5 Years</option>
+              <option value="5-8 years">5 - 8 Years</option>
+              <option value="8+ years">8+ Years (Lead)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Portfolio / LinkedIn / GitHub Link</label>
+          <input type="url" id="applyPortfolio" placeholder="https://linkedin.com/in/username" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Upload Resume (PDF, DOCX) *</label>
+          <div class="border border-dashed border-slate-300 bg-slate-50 p-3 rounded-2xl text-center">
+            <input type="file" id="applyResumeFile" accept=".pdf,.doc,.docx" required class="text-xs text-slate-600 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Cover Note / Why you?</label>
+          <textarea id="applyCoverNote" rows="2" placeholder="Tell the hiring manager why you are the best candidate..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+        </div>
+
+        <button 
+          type="submit" 
+          id="applySubmitBtn"
+          class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Submit Application to SQLite</span>
+          <i data-lucide="send" class="w-4 h-4"></i>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Client Script connecting to SQLite Backend API -->
+  <script src="app.js"></script>
+</body>
+</html>
