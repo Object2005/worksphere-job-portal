@@ -74,7 +74,7 @@
       <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-            Email Address *
+            Work or Personal Email *
           </label>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
@@ -84,16 +84,21 @@
               type="email" 
               id="loginEmail" 
               required 
-              placeholder="rahul.sharma@tech.com" 
-              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="name@company.com" 
+              class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400"
             />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-            Password *
-          </label>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
+              Password *
+            </label>
+            <a href="javascript:void(0)" onclick="alert('Password reset link has been sent to your email address.')" class="text-[11px] font-semibold text-indigo-600 hover:underline">
+              Forgot Password?
+            </a>
+          </div>
           <div class="relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
               <i data-lucide="lock" class="w-4 h-4"></i>
@@ -102,8 +107,8 @@
               type="password" 
               id="loginPassword" 
               required 
-              placeholder="••••••••••••" 
-              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Enter your password" 
+              class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400"
             />
             <button type="button" onclick="togglePassVisibility('loginPassword')" class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
               <i data-lucide="eye" class="w-4 h-4"></i>
@@ -111,12 +116,19 @@
           </div>
         </div>
 
+        <div class="flex items-center">
+          <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+            <input type="checkbox" checked class="accent-indigo-600 w-3.5 h-3.5 rounded">
+            <span>Remember me on this device</span>
+          </label>
+        </div>
+
         <button 
           type="submit" 
           id="loginSubmitBtn"
           class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>Sign In with Email & Password</span>
+          <span>Sign In to Your Account</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </form>
@@ -125,14 +137,14 @@
       <form id="registerForm" onsubmit="handleRegisterSubmit(event)" class="hidden space-y-3.5">
         <div>
           <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-            Full Name *
+            Full Legal Name *
           </label>
           <input 
             type="text" 
             id="regFullName" 
             required 
-            placeholder="e.g. Rahul Sharma" 
-            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="First and Last name" 
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400"
           />
         </div>
 
@@ -144,8 +156,8 @@
             type="email" 
             id="regEmail" 
             required 
-            placeholder="apna.email@domain.com" 
-            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="name@example.com" 
+            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400"
           />
         </div>
 
@@ -159,8 +171,8 @@
               id="regPassword" 
               required 
               minlength="6"
-              placeholder="Min 6 chars" 
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="Minimum 6 chars" 
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400"
             />
           </div>
           <div>
@@ -172,16 +184,16 @@
               id="regPhone" 
               required 
               placeholder="+91 98765 43210" 
-              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-400"
             />
           </div>
         </div>
 
         <!-- ID Verification Document Upload / Input -->
-        <div class="p-3 bg-indigo-50/70 border border-indigo-100 rounded-2xl">
-          <div class="flex items-center gap-1.5 text-xs font-bold text-indigo-900 mb-2">
+        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-800 mb-2">
             <i data-lucide="badge-check" class="w-4 h-4 text-indigo-600"></i>
-            <span>Candidate ID Verification (Optional for Verified Badge)</span>
+            <span>Candidate Identity Verification (Optional)</span>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -196,12 +208,12 @@
               <input 
                 type="text" 
                 id="regDocNumber" 
-                placeholder="XXXX-XXXX-1234" 
-                class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none"
+                placeholder="ID Number" 
+                class="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-800 outline-none placeholder-slate-400"
               />
             </div>
           </div>
-          <p class="text-[10px] text-slate-500 mt-1.5">ID verification candidate ko 3x hiring preference aur verified green badge deta hai.</p>
+          <p class="text-[10px] text-slate-500 mt-1.5">Verified candidates get priority shortlisting by top multinational corporate recruiters.</p>
         </div>
 
         <button 
@@ -209,24 +221,17 @@
           id="regSubmitBtn"
           class="w-full py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>Create Account & Verify</span>
-          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Create Free Candidate Account</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </form>
 
-      <!-- Quick 1-Click Demo Profiles (Pre-seeded in SQLite) -->
-      <div class="mt-6 pt-5 border-t border-slate-100">
-        <p class="text-xs text-slate-400 font-semibold text-center mb-2.5">Quick Demo Logins (Pre-seeded in SQLite):</p>
-        <div class="flex flex-col gap-1.5">
-          <button onclick="fillDemoCredentials('rahul.sharma@tech.com', 'password123')" class="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 text-xs text-left flex items-center justify-between transition-all">
-            <span class="font-medium text-slate-700 truncate">rahul.sharma@tech.com (Pass: password123)</span>
-            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">ID Verified ✓</span>
-          </button>
-          <button onclick="fillDemoCredentials('priya.design@agency.io', 'password123')" class="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-200 text-xs text-left flex items-center justify-between transition-all">
-            <span class="font-medium text-slate-700 truncate">priya.design@agency.io (Pass: password123)</span>
-            <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">Pending ID</span>
-          </button>
-        </div>
+      <!-- Trust & Security Footer (No Demo Logins) -->
+      <div class="mt-6 pt-5 border-t border-slate-100 text-center">
+        <p class="text-[11px] text-slate-400 flex items-center justify-center gap-1">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-500"></i>
+          <span>256-bit SSL Encrypted • Direct Corporate Hiring</span>
+        </p>
       </div>
 
     </div>
