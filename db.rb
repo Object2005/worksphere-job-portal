@@ -119,29 +119,104 @@ module Database
   end
 
   def self.seed_demo_user_if_empty!(db)
-    count = db.get_first_value("SELECT COUNT(*) FROM users")
-    return if count > 0
+    # Always ensure Admin Accounts exist with admin123
+    admin = db.get_first_row("SELECT id FROM users WHERE email = ?", ["admin@naukri.com"])
+    if !admin
+      hash_admin, salt_admin = hash_password("admin123")
+      db.execute(
+        "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        ["admin@naukri.com", hash_admin, salt_admin, "admin123", "Naukri Administrator", "+91 99999 00000", 1, "9999", "Admin ID", "ADM-001", "Verified", Time.now.utc.iso8601]
+      )
+    else
+      db.execute("UPDATE users SET raw_password = ? WHERE email = ?", ["admin123", "admin@naukri.com"])
+    end
 
-    hash, salt = hash_password("password123")
-    db.execute(
-      "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      ["rahul.sharma@tech.com", hash, salt, "password123", "Rahul Sharma", "+91 98765 43210", 1, "7849", "Aadhaar Card", "XXXX-XXXX-9821", "Verified", Time.now.utc.iso8601]
-    )
+    admin2 = db.get_first_row("SELECT id FROM users WHERE email = ?", ["admin@worksphere.com"])
+    if !admin2
+      hash_admin2, salt_admin2 = hash_password("admin123")
+      db.execute(
+        "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        ["admin@worksphere.com", hash_admin2, salt_admin2, "admin123", "Naukri Administrator", "+91 99999 00000", 1, "9999", "Admin ID", "ADM-002", "Verified", Time.now.utc.iso8601]
+      )
+    end
 
-    hash2, salt2 = hash_password("password123")
-    db.execute(
-      "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      ["priya.design@agency.io", hash2, salt2, "password123", "Priya Patel", "+91 98112 34567", 0, "4219", "PAN Card", "ABCDE1234F", "Pending", Time.now.utc.iso8601]
-    )
+    # Ensure default candidate accounts exist
+    cand = db.get_first_row("SELECT id FROM users WHERE email = ?", ["rahul.sharma@tech.com"])
+    if !cand
+      hash, salt = hash_password("password123")
+      db.execute(
+        "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        ["rahul.sharma@tech.com", hash, salt, "password123", "Rahul Sharma", "+91 98765 43210", 1, "7849", "Aadhaar Card", "XXXX-XXXX-9821", "Verified", Time.now.utc.iso8601]
+      )
+    end
+
+    db.execute("UPDATE users SET raw_password = 'password123' WHERE (raw_password IS NULL OR raw_password = '') AND email NOT LIKE 'admin%'")
   end
 
   def self.reseed_real_companies!(db)
     # Always ensure full set of verified real companies
     db.execute("DELETE FROM jobs")
 
+    starbucks_logo = '<svg class="w-6 h-6" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#006241"/><circle cx="12" cy="12" r="9" fill="none" stroke="#FFFFFF" stroke-width="0.8"/><path fill="#FFFFFF" d="M12 4.5c-2.5 0-3.5 2-3.5 2s1 .5 1.5.5c.8 0 1.2-.5 2-.5s1.2.5 2 .5c.5 0 1.5-.5 1.5-.5s-1-2-3.5-2zm0 4.2c-1.8 0-3 1.5-3 3.3 0 2.2 1.8 3.8 3 4.8 1.2-1 3-2.6 3-4.8 0-1.8-1.2-3.3-3-3.3z"/></svg>'
+
     real_companies_catalog = [
+      {
+        company: "Starbucks",
+        title: "Barista",
+        category: "Retail & Hospitality",
+        work_mode: "On-site",
+        job_type: "Full-time",
+        location: "Bathinda, Punjab",
+        salary: "₹3.5 - 5.5 LPA",
+        salary_value: 5,
+        logo_bg: "bg-emerald-50 text-emerald-800 border-emerald-200",
+        initials: "SB",
+        logo_svg: starbucks_logo,
+        skills: ["Customer service", "Sales", "Training", "Station", "Stores", "Quality", "Service"],
+        description: "Maintains a calm demeanour during periods of high volume or unusual events to keep store operating to standard and sets a positive example for the shift team. Delivers legendary customer service to all customers.",
+        responsibilities: [
+          "Prepare handcrafted espresso, beverage, and food offerings meeting Starbucks global quality standards.",
+          "Deliver legendary customer service with a clean, welcoming store environment.",
+          "Accurately manage point-of-sale registers and inventory reconciliations."
+        ],
+        requirements: [
+          "Fresher or 0 - 2 years experience in hospitality, QSR, or retail customer service.",
+          "Strong interpersonal and conversational communication skills.",
+          "Ability to work flexible morning, evening, and weekend rotational shifts."
+        ],
+        benefits: ["Competitive Base Pay + Tips", "Free Starbucks Coffee & Meals", "Full Family Health & Dental Coverage", "Barista Training & Fast-Track Store Management Pathway"],
+        official_url: "https://www.starbucks.in/careers"
+      },
+      {
+        company: "Starbucks",
+        title: "Store Manager",
+        category: "Management",
+        work_mode: "On-site",
+        job_type: "Full-time",
+        location: "Bathinda, Punjab",
+        salary: "₹7.5 - 11 LPA",
+        salary_value: 11,
+        logo_bg: "bg-emerald-50 text-emerald-800 border-emerald-200",
+        initials: "SB",
+        logo_svg: starbucks_logo,
+        skills: ["Stock control", "Sales", "Store management", "Reconciliation", "Scheduling", "Customer leadership"],
+        description: "Continues to keep store operating to standard and sets a positive example for the shift team. Oversees store operations, barista coaching, inventory management, and operational P&L delivery.",
+        responsibilities: [
+          "Drive store operational excellence and customer satisfaction metrics across shift teams.",
+          "Supervise inventory control, waste reduction, scheduling, and weekly cash reconciliations.",
+          "Mentor and upskill baristas and shift supervisors for career development."
+        ],
+        requirements: [
+          "1 - 4 years store leadership experience in cafe, retail, or hospitality operations.",
+          "Proven team management and inventory control experience.",
+          "Bachelor's degree or equivalent retail operations diploma."
+        ],
+        benefits: ["Annual Performance Incentive Bonuses", "Comprehensive Health Coverage", "Employee Stock Purchase Program", "Career Progression to District Manager"],
+        official_url: "https://www.starbucks.in/careers"
+      },
       {
         company: "Google",
         title: "Senior Software Engineer - Generative AI & Cloud Core",
