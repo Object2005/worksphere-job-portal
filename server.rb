@@ -12,6 +12,7 @@ ROOT_DIR = File.expand_path(File.dirname(__FILE__))
 Database.init!
 
 server = WEBrick::HTTPServer.new(
+  BindAddress: '0.0.0.0',
   Port: PORT,
   Logger: WEBrick::Log.new(nil, WEBrick::BasicLog::WARN),
   AccessLog: []
