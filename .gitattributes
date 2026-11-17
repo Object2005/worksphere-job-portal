@@ -1,0 +1,15 @@
+# Force GitHub Linguist to detect JavaScript as the repository language
+*.html linguist-detectable=false
+*.html linguist-vendored=true
+*.css linguist-detectable=false
+*.css linguist-vendored=true
+*.rb linguist-detectable=false
+*.rb linguist-vendored=true
+*.sql linguist-detectable=false
+*.sql linguist-vendored=true
+
+# Mark JavaScript as the primary language
+*.js linguist-detectable=true
+*.js linguist-language=JavaScript
+app.js linguist-detectable=true
+app.js linguist-language=JavaScript
