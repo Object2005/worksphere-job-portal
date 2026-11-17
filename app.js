@@ -770,3 +770,111 @@ function showToast(message, type = "info") {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+
+// ==============================================
+// 8. ADMIN SQLITE DATABASE VIEWER
+// ==============================================
+function openAdminModal() {
+  const modal = document.getElementById("adminModal");
+  if (!modal) return;
+  modal.classList.remove("hidden");
+  fetchAdminData();
+  lucide.createIcons();
+}
+
+function closeAdminModal() {
+  const modal = document.getElementById("adminModal");
+  if (modal) modal.classList.add("hidden");
+}
+
+function switchAdminTab(tab) {
+  const usersTab = document.getElementById("adminViewUsers");
+  const appsTab = document.getElementById("adminViewApps");
+  const btnUsers = document.getElementById("adminTabBtnUsers");
+  const btnApps = document.getElementById("adminTabBtnApps");
+
+  if (tab === 'users') {
+    if (usersTab) usersTab.classList.remove("hidden");
+    if (appsTab) appsTab.classList.add("hidden");
+    if (btnUsers) btnUsers.className = "pb-3 px-4 text-xs font-bold text-indigo-600 border-b-2 border-indigo-600 transition-all flex items-center gap-2";
+    if (btnApps) btnApps.className = "pb-3 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all flex items-center gap-2";
+  } else {
+    if (usersTab) usersTab.classList.add("hidden");
+    if (appsTab) appsTab.classList.remove("hidden");
+    if (btnUsers) btnUsers.className = "pb-3 px-4 text-xs font-bold text-slate-500 hover:text-slate-900 transition-all flex items-center gap-2";
+    if (btnApps) btnApps.className = "pb-3 px-4 text-xs font-bold text-indigo-600 border-b-2 border-indigo-600 transition-all flex items-center gap-2";
+  }
+  lucide.createIcons();
+}
+
+async function fetchAdminData() {
+  try {
+    const res = await fetch("/api/admin/overview");
+    const data = await res.json();
+    if (!data.success) {
+      showToast(data.error || "Failed to load admin data", "warning");
+      return;
+    }
+
+    // Update KPIs
+    if (document.getElementById("adminKpiUsers")) document.getElementById("adminKpiUsers").innerText = data.stats.total_users;
+    if (document.getElementById("adminKpiApps")) document.getElementById("adminKpiApps").innerText = data.stats.total_applications;
+    if (document.getElementById("adminKpiVerified")) document.getElementById("adminKpiVerified").innerText = data.stats.verified_users;
+    if (document.getElementById("adminTabUsersBadge")) document.getElementById("adminTabUsersBadge").innerText = data.stats.total_users;
+    if (document.getElementById("adminTabAppsBadge")) document.getElementById("adminTabAppsBadge").innerText = data.stats.total_applications;
+
+    // Render Users Table
+    const usersBody = document.getElementById("adminUsersTableBody");
+    if (usersBody) {
+      if (data.users.length === 0) {
+        usersBody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">No users registered yet</td></tr>`;
+      } else {
+        usersBody.innerHTML = data.users.map(u => {
+          const verifiedBadge = u.is_verified === 1 
+            ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800"><i data-lucide="check-circle" class="w-3 h-3"></i> Verified (${escapeHtml(u.id_document_type)})</span>`
+            : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800"><i data-lucide="clock" class="w-3 h-3"></i> Pending</span>`;
+          
+          const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : 'N/A';
+
+          return `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="py-3 px-3 font-mono font-bold text-slate-500">#${u.id}</td>
+              <td class="py-3 px-3 font-bold text-slate-900">${escapeHtml(u.full_name || 'N/A')}</td>
+              <td class="py-3 px-3 font-semibold text-indigo-700 bg-indigo-50/50 rounded">${escapeHtml(u.email)}</td>
+              <td class="py-3 px-3 text-slate-600">${escapeHtml(u.phone || 'N/A')}</td>
+              <td class="py-3 px-3">${verifiedBadge}</td>
+              <td class="py-3 px-3 text-slate-500 text-[11px]">${regDate}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    // Render Applications Table
+    const appsBody = document.getElementById("adminAppsTableBody");
+    if (appsBody) {
+      if (data.applications.length === 0) {
+        appsBody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400">No applications received yet</td></tr>`;
+      } else {
+        appsBody.innerHTML = data.applications.map(a => {
+          const appDate = a.created_at ? new Date(a.created_at).toLocaleDateString() : 'N/A';
+          return `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="py-3 px-3 font-bold text-slate-900">${escapeHtml(a.candidate_name)}</td>
+              <td class="py-3 px-3 font-semibold text-indigo-700">${escapeHtml(a.candidate_email)}</td>
+              <td class="py-3 px-3 font-bold text-slate-800">${escapeHtml(a.company)}</td>
+              <td class="py-3 px-3 text-slate-600">${escapeHtml(a.title)}</td>
+              <td class="py-3 px-3 font-mono text-slate-500 text-[11px]">${escapeHtml(a.resume_filename)}</td>
+              <td class="py-3 px-3 text-slate-500 text-[11px]">${appDate}</td>
+            </tr>
+          `;
+        }).join("");
+      }
+    }
+
+    lucide.createIcons();
+  } catch (err) {
+    console.error("Admin fetch error:", err);
+    showToast("Error connecting to SQLite Admin API", "warning");
+  }
+}
