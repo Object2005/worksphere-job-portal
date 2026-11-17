@@ -178,6 +178,7 @@ server.mount_proc('/') do |req, res|
               [token, user_id, expires_at, Time.now.utc.iso8601]
             )
 
+            is_admin = email.include?('admin')
             user_data = {
               id: user_id,
               email: email,
@@ -187,7 +188,8 @@ server.mount_proc('/') do |req, res|
               id_status: id_status,
               id_document_type: doc_type,
               id_document_number: doc_number,
-              verification_code: v_code
+              verification_code: v_code,
+              is_admin: is_admin
             }
 
             json_response(res, { success: true, message: 'Account registered successfully!', token: token, user: user_data })
@@ -218,6 +220,7 @@ server.mount_proc('/') do |req, res|
               [token, user['id'], expires_at, Time.now.utc.iso8601]
             ) rescue nil
 
+            is_admin = (user['email'] == 'admin@naukri.com' || user['email'] == 'admin@worksphere.com' || user['email'].include?('admin'))
             user_data = {
               id: user['id'],
               email: user['email'],
@@ -227,7 +230,8 @@ server.mount_proc('/') do |req, res|
               id_status: user['id_status'],
               id_document_type: user['id_document_type'],
               id_document_number: user['id_document_number'],
-              verification_code: user['verification_code']
+              verification_code: user['verification_code'],
+              is_admin: is_admin
             }
 
             json_response(res, { success: true, message: 'Login successful!', token: token, user: user_data })
@@ -240,6 +244,7 @@ server.mount_proc('/') do |req, res|
       elsif path == '/api/auth/me' && req.request_method == 'GET'
         user = get_auth_user(req)
         if user
+          is_admin = (user['email'] == 'admin@naukri.com' || user['email'] == 'admin@worksphere.com' || user['email'].include?('admin'))
           user_data = {
             id: user['user_id'],
             email: user['email'],
@@ -249,7 +254,8 @@ server.mount_proc('/') do |req, res|
             id_status: user['id_status'],
             id_document_type: user['id_document_type'],
             id_document_number: user['id_document_number'],
-            verification_code: user['verification_code']
+            verification_code: user['verification_code'],
+            is_admin: is_admin
           }
           json_response(res, { success: true, user: user_data })
         else
