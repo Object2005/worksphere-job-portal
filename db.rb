@@ -4,11 +4,14 @@ require 'json'
 require 'openssl'
 require 'securerandom'
 require 'time'
+require 'fileutils'
 
-DB_PATH = File.expand_path(File.join(File.dirname(__FILE__), 'data', 'portal.sqlite3'))
+DB_DIR = File.expand_path(File.join(File.dirname(__FILE__), 'data'))
+DB_PATH = File.join(DB_DIR, 'portal.sqlite3')
 
 module Database
   def self.connect
+    FileUtils.mkdir_p(DB_DIR) unless File.directory?(DB_DIR)
     db = SQLite3::Database.new(DB_PATH)
     db.results_as_hash = true
     db.busy_timeout = 5000
