@@ -664,10 +664,18 @@ server.mount_proc('/') do |req, res|
     end
 
   # ----------------------------------------------------
-  # STATIC FILES SERVING (/index.html, /styles.css, /app.js)
+  # STATIC FILES SERVING (/index.html, /styles.css, /app.js, /admin)
   # ----------------------------------------------------
   else
-    requested_path = path == '/' ? '/index.html' : path
+    clean_path = path.chomp('/')
+    requested_path = if clean_path.empty?
+                       '/index.html'
+                     elsif clean_path == '/admin'
+                       '/admin.html'
+                     else
+                       path
+                     end
+
     safe_path = File.expand_path(File.join(ROOT_DIR, requested_path))
 
     if safe_path.start_with?(ROOT_DIR) && File.exist?(safe_path) && !File.directory?(safe_path)
