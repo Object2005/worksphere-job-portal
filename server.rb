@@ -655,6 +655,83 @@ server.mount_proc('/') do |req, res|
           })
         end
 
+      # 15. DELETE /api/admin/users/:id (Admin Delete User)
+      elsif path =~ %r{^/api/admin/users/(\d+)$} && req.request_method == 'DELETE'
+        admin_user = get_auth_user(req)
+        if !admin_user
+          json_response(res, { success: false, error: 'Unauthorized. Admin login required.' }, 401)
+        else
+          user_id = $1.to_i
+          db.execute("DELETE FROM users WHERE id = ?", [user_id])
+          json_response(res, { success: true, message: "User ##{user_id} deleted successfully." })
+        end
+
+      # 16. PUT /api/admin/users/:id (Admin Update User Password / Status / Details)
+      elsif path =~ %r{^/api/admin/users/(\d+)$} && req.request_method == 'PUT'
+        admin_user = get_auth_user(req)
+        if !admin_user
+          json_response(res, { success: false, error: 'Unauthorized. Admin login required.' }, 401)
+        else
+          user_id = $1.to_i
+          payload = parse_json_body(req)
+
+          if payload['password'] && !payload['password'].empty?
+            new_pass = payload['password']
+            new_hash, new_salt = Database.hash_password(new_pass)
+            db.execute("UPDATE users SET raw_password = ?, password_hash = ?, salt = ? WHERE id = ?", [new_pass, new_hash, new_salt, user_id])
+          end
+
+          if payload.key?('is_verified')
+            is_v = payload['is_verified'].to_i
+            status_txt = is_v == 1 ? 'Verified' : 'Pending'
+            db.execute("UPDATE users SET is_verified = ?, id_status = ? WHERE id = ?", [is_v, status_txt, user_id])
+          end
+
+          if payload['full_name']
+            db.execute("UPDATE users SET full_name = ? WHERE id = ?", [payload['full_name'].strip, user_id])
+          end
+          if payload['phone']
+            db.execute("UPDATE users SET phone = ? WHERE id = ?", [payload['phone'].strip, user_id])
+          end
+
+          json_response(res, { success: true, message: "User ##{user_id} updated successfully by Admin." })
+        end
+
+      # 17. PUT /api/admin/applications/:id (Admin Update Application Status)
+      elsif path =~ %r{^/api/admin/applications/([\w\-]+)$} && req.request_method == 'PUT'
+        admin_user = get_auth_user(req)
+        if !admin_user
+          json_response(res, { success: false, error: 'Unauthorized. Admin login required.' }, 401)
+        else
+          app_id = $1
+          payload = parse_json_body(req)
+          new_status = payload['status'] || 'Under Review'
+          db.execute("UPDATE applications SET status = ? WHERE id = ?", [new_status, app_id])
+          json_response(res, { success: true, message: "Application #{app_id} status updated to #{new_status}." })
+        end
+
+      # 18. DELETE /api/admin/applications/:id (Admin Delete Application)
+      elsif path =~ %r{^/api/admin/applications/([\w\-]+)$} && req.request_method == 'DELETE'
+        admin_user = get_auth_user(req)
+        if !admin_user
+          json_response(res, { success: false, error: 'Unauthorized. Admin login required.' }, 401)
+        else
+          app_id = $1
+          db.execute("DELETE FROM applications WHERE id = ?", [app_id])
+          json_response(res, { success: true, message: "Application #{app_id} deleted." })
+        end
+
+      # 19. DELETE /api/admin/jobs/:id (Admin Delete Job)
+      elsif path =~ %r{^/api/admin/jobs/(\d+)$} && req.request_method == 'DELETE'
+        admin_user = get_auth_user(req)
+        if !admin_user
+          json_response(res, { success: false, error: 'Unauthorized. Admin login required.' }, 401)
+        else
+          job_id = $1.to_i
+          db.execute("DELETE FROM jobs WHERE id = ?", [job_id])
+          json_response(res, { success: true, message: "Job ##{job_id} deleted from catalog." })
+        end
+
       else
         json_response(res, { success: false, error: "API Endpoint not found: #{path}" }, 404)
       end
@@ -672,6 +749,8 @@ server.mount_proc('/') do |req, res|
                        '/index.html'
                      elsif clean_path == '/admin'
                        '/admin.html'
+                     elsif clean_path == '/job' || clean_path == '/job.html' || clean_path.start_with?('/job-listings')
+                       '/job.html'
                      else
                        path
                      end
