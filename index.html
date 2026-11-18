@@ -58,6 +58,22 @@
 <body class="bg-[#f8f9fa] text-slate-900 font-sans antialiased min-h-screen selection:bg-[#275df5] selection:text-white flex flex-col">
 
   <!-- ============================================== -->
+  <!-- TOP ANNOUNCEMENT BANNER: AI-Q (Video 3)        -->
+  <!-- ============================================== -->
+  <div class="bg-[#0b1b36] text-white py-2 px-4 text-xs font-semibold">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="px-2 py-0.5 bg-blue-600 rounded text-[10px] font-black tracking-wider">AI-Q</span>
+        <span>Test your AI knowledge & win AI gadgets</span>
+      </div>
+      <a href="/prepare" class="text-blue-300 hover:text-white flex items-center gap-1 font-bold">
+        <span>Take the challenge</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+      </a>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
   <!-- 1. NAUKRI HEADER & NAVIGATION BAR              -->
   <!-- ============================================== -->
   <header class="sticky top-0 z-40 bg-white border-b border-slate-200/90 shadow-xs">
@@ -77,23 +93,25 @@
               </svg>
             </div>
             <div class="flex flex-col">
-              <span class="text-2xl font-black tracking-tight text-[#0f2c59] lowercase leading-none">naukri</span>
+              <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-black tracking-tight text-[#0f2c59] lowercase leading-none">naukri</span>
+                <span class="text-lg font-bold tracking-tight text-[#ff6b4a] lowercase leading-none">campus</span>
+              </div>
               <span class="text-[9px] font-bold text-slate-400 tracking-wider uppercase mt-0.5">Corporate & Tech</span>
             </div>
           </a>
 
           <!-- Main Navigation Links -->
-          <nav class="hidden md:flex items-center space-x-7 text-[13px] font-semibold text-slate-700">
+          <nav class="hidden md:flex items-center space-x-6 text-[13px] font-semibold text-slate-700">
+            <a href="/prepare" class="hover:text-[#275df5] transition-colors">Prepare</a>
             <button onclick="scrollToJobFeed()" class="hover:text-[#275df5] transition-colors flex items-center gap-1 cursor-pointer">
               <span>Jobs</span>
             </button>
             <button onclick="filterByTopCompanies()" class="hover:text-[#275df5] transition-colors flex items-center gap-1 cursor-pointer">
               <span>Companies</span>
             </button>
-            <button onclick="showToast('Naukri FastForward Services are active for all candidates.', 'info')" class="hover:text-[#275df5] transition-colors flex items-center gap-1 cursor-pointer">
-              <span>Services</span>
-              <span class="w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center leading-none">1</span>
-            </button>
+            <a href="/profile.html" class="hover:text-[#275df5] transition-colors">My Profile</a>
+            <a href="/job.html" class="hover:text-[#275df5] transition-colors text-blue-600 font-bold">Featured Opening</a>
           </nav>
         </div>
 
