@@ -153,6 +153,19 @@ module Database
       )
     end
 
+    # Ensure Aashray Narang candidate account exists matching Video
+    aashray = db.get_first_row("SELECT id FROM users WHERE email = ?", ["narangaashray58@gmail.com"])
+    if !aashray
+      hash_aash, salt_aash = hash_password("password123")
+      db.execute(
+        "INSERT INTO users (email, password_hash, salt, raw_password, full_name, phone, is_verified, verification_code, id_document_type, id_document_number, id_status, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        ["narangaashray58@gmail.com", hash_aash, salt_aash, "password123", "Aashray Narang", "7717306253", 1, "7717", "College ID", "CIET-2024", "Verified", Time.now.utc.iso8601]
+      )
+    else
+      db.execute("UPDATE users SET full_name = 'Aashray Narang', phone = '7717306253', raw_password = 'password123', is_verified = 1, id_status = 'Verified' WHERE email = 'narangaashray58@gmail.com'")
+    end
+
     db.execute("UPDATE users SET raw_password = 'password123' WHERE (raw_password IS NULL OR raw_password = '') AND email NOT LIKE 'admin%'")
   end
 
