@@ -387,13 +387,6 @@ function switchAuthTab(mode) {
   lucide.createIcons();
 }
 
-function fillAdminLogin() {
-  switchAuthTab('login');
-  document.getElementById("loginEmailInput").value = "admin@naukri.com";
-  document.getElementById("loginPassInput").value = "admin123";
-  showToast("Admin credentials filled! Click Sign In to open Master Console.", "info");
-}
-
 function togglePassVisibility(id) {
   const el = document.getElementById(id);
   if (el) el.type = el.type === 'password' ? 'text' : 'password';
