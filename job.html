@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="pageTitle">Java Developer - Ignitefortune Tech - Pune, Remote | Naukri Campus</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            naukri: {
+              blue: '#275df5',
+              darkBlue: '#185adb',
+              navy: '#0f2c59',
+              orange: '#ff6b4a',
+              card: '#ffffff',
+              border: '#e2e8f0'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Smooth Naukri scrollbars & cards */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    .naukri-card {
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+    }
+    .naukri-card:hover {
+      box-shadow: 0 4px 16px -2px rgba(15, 44, 89, 0.06);
+    }
+    .sticky-bar-active {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .sticky-bar-hidden {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+  </style>
+</head>
+<body class="bg-[#f8f9fa] text-slate-900 font-sans antialiased min-h-screen selection:bg-[#275df5] selection:text-white flex flex-col">
+
+  <!-- ============================================== -->
+  <!-- 1. STICKY TOP FLOATING ACTION BAR (Screenshot 2) -->
+  <!-- ============================================== -->
+  <div id="stickyHeader" class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-sm py-2.5 px-4 transition-all duration-200 sticky-bar-hidden">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div id="stickyCompanyLogo" class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center font-bold text-lg shadow-2xs">
+          I
+        </div>
+        <div>
+          <h2 id="stickyJobTitle" class="text-sm sm:text-base font-bold text-slate-900 leading-snug">Java Developer</h2>
+          <p id="stickyJobCompany" class="text-xs text-slate-500 font-medium">Ignitefortune Tech</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="javascript:void(0)" onclick="sendMeJobsAlert()" class="hidden md:inline-block text-xs font-bold text-[#275df5] hover:underline cursor-pointer">
+          Send me jobs like this
+        </a>
+        <button id="stickyApplyBtn" onclick="handleJobApplyClick()" class="px-7 py-2 bg-[#275df5] hover:bg-[#185adb] text-white font-bold rounded-full text-xs shadow-xs transition-all cursor-pointer">
+          Apply
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 2. NAUKRI CAMPUS HEADER & NAV (Screenshot 1)   -->
+  <!-- ============================================== -->
+  <header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-2xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Left: Logo & Nav Links -->
+        <div class="flex items-center gap-8">
+          <!-- Naukri Campus Logo -->
+          <a href="/" class="flex items-center gap-2 group cursor-pointer">
+            <div class="w-8 h-8 rounded-full bg-[#275df5] flex items-center justify-center text-white shadow-sm shadow-blue-500/20">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M4 21v-2a6 6 0 0 1 12 0v2H4z"/>
+                <circle cx="18" cy="11" r="2" fill="#ff6b4a"/>
+              </svg>
+            </div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-black tracking-tight text-[#0f2c59] lowercase">naukri</span>
+              <span class="text-lg font-bold tracking-tight text-[#ff6b4a] lowercase">campus</span>
+            </div>
+          </a>
+
+          <!-- Navigation Links -->
+          <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-600">
+            <a href="/" class="hover:text-[#275df5] transition-colors">Prepare</a>
+            <a href="/" class="hover:text-[#275df5] transition-colors">Participate</a>
+            <a href="/" class="text-[#275df5] font-bold border-b-2 border-[#275df5] py-5">Opportunities</a>
+          </nav>
+        </div>
+
+        <!-- Center: Search Input Bar -->
+        <div class="hidden sm:flex items-center flex-1 max-w-sm mx-6">
+          <div class="w-full flex items-center bg-slate-50 border border-slate-200 rounded-full pl-4 pr-1 py-1 focus-within:bg-white focus-within:border-[#275df5] focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+            <input type="text" id="campusSearchInput" placeholder="Search jobs here" class="w-full bg-transparent text-xs text-slate-700 outline-none placeholder:text-slate-400 font-medium">
+            <button onclick="handleCampusSearch()" class="w-7 h-7 rounded-full bg-[#275df5] text-white flex items-center justify-center hover:bg-[#185adb] transition-colors shrink-0">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Notifications & Profile -->
+        <div class="flex items-center gap-3">
+          
+          <!-- Bell Notification with Red Badge '7' (Screenshot 1) -->
+          <div class="relative cursor-pointer p-1 text-slate-600 hover:text-slate-900" title="Notifications">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span class="absolute 0 top-0 right-0 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
+              7
+            </span>
+          </div>
+
+          <!-- Profile Hamburger Box with Badge '2' (Screenshot 1) -->
+          <div id="campusProfilePill" onclick="handleProfileClick()" class="flex items-center gap-2 px-2.5 py-1.5 rounded-full border border-slate-200 hover:border-slate-300 hover:shadow-xs transition-all cursor-pointer bg-white relative">
+            <i data-lucide="menu" class="w-4 h-4 text-slate-600"></i>
+            <div id="navAvatarCircle" class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs overflow-hidden">
+              <img id="navAvatarImg" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=80&q=80" alt="Avatar" class="w-full h-full object-cover">
+            </div>
+            <span class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
+              2
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================== -->
+  <!-- 3. MAIN CONTENT: 2-COLUMN NAUKRI JOB DETAILS   -->
+  <!-- ============================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      
+      <!-- ============================================== -->
+      <!-- LEFT COLUMN: MAIN JOB SPECIFICATIONS (8 cols)  -->
+      <!-- ============================================== -->
+      <div class="lg:col-span-8 space-y-4">
+        
+        <!-- CARD 1: MAIN JOB HEADER CARD (Screenshot 1) -->
+        <div id="mainJobCard" class="naukri-card bg-white rounded-2xl border border-slate-200 p-6 shadow-xs relative">
+          
+          <!-- Top Row: Title + Company + Logo on Right -->
+          <div class="flex items-start justify-between gap-4">
+            <div class="space-y-1">
+              <h1 id="jobTitleElem" class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">
+                Java Developer
+              </h1>
+              <div class="text-sm font-semibold text-slate-700">
+                <span id="jobCompanyElem">Ignitefortune Tech</span>
+              </div>
+            </div>
+
+            <!-- Purple Company Logo (Matching Screenshot 1) -->
+            <div id="jobLogoElem" class="w-13 h-13 shrink-0 rounded-2xl bg-purple-50 text-purple-600 border border-purple-200 shadow-2xs flex items-center justify-center p-2 font-bold text-2xl">
+              I
+            </div>
+          </div>
+
+          <!-- Metadata Icons Row: Experience, Salary, Remote, Location -->
+          <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-600 font-semibold mt-4 pb-4 border-b border-slate-100">
+            <span class="flex items-center gap-1.5 text-slate-700">
+              <i data-lucide="briefcase" class="w-4 h-4 text-slate-400"></i>
+              <span id="jobExpElem">0 - 1 years</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-slate-700">
+              <i data-lucide="indian-rupee" class="w-4 h-4 text-slate-400"></i>
+              <span id="jobSalaryElem">₹ Not Disclosed</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-slate-700">
+              <i data-lucide="home" class="w-4 h-4 text-slate-400"></i>
+              <span id="jobWorkModeElem">Remote</span>
+            </span>
+            <span class="flex items-center gap-1.5 text-slate-700">
+              <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
+              <span id="jobLocationElem">Hiring office located in Pune</span>
+            </span>
+          </div>
+
+          <!-- Action Row: Posted, Openings, Applicants | Send Me Jobs, Save, Apply -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 text-xs font-medium">
+            <div class="flex items-center gap-3 text-slate-500 font-medium">
+              <span id="jobPostedElem">Posted: <strong class="text-slate-700">1 day ago</strong></span>
+              <span class="text-slate-300">•</span>
+              <span>Openings: <strong id="jobOpeningsElem" class="text-slate-700">11</strong></span>
+              <span class="text-slate-300">•</span>
+              <span>Applicants: <strong id="jobApplicantsElem" class="text-slate-700">100+</strong></span>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0">
+              <a href="javascript:void(0)" onclick="sendMeJobsAlert()" class="text-xs font-bold text-[#275df5] hover:underline cursor-pointer mr-1">
+                Send me jobs like this
+              </a>
+              <button id="saveJobBtn" onclick="toggleSaveCurrentJob()" class="px-5 py-2 rounded-full border border-[#275df5] text-[#275df5] hover:bg-blue-50 transition-colors font-bold text-xs cursor-pointer flex items-center gap-1.5">
+                <i data-lucide="bookmark" class="w-3.5 h-3.5"></i>
+                <span id="saveJobText">Save</span>
+              </button>
+              <button id="mainApplyBtn" onclick="handleJobApplyClick()" class="px-7 py-2 bg-[#275df5] hover:bg-[#185adb] text-white font-bold rounded-full text-xs shadow-xs transition-all cursor-pointer">
+                Apply
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CARD 2: JOB HIGHLIGHTS (Screenshot 1) -->
+        <div class="naukri-card bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Job highlights</h3>
+          <ul id="jobHighlightsList" class="space-y-2.5 text-xs text-slate-600 leading-relaxed font-medium">
+            <li class="flex items-start gap-2">
+              <span class="text-slate-400 mt-1">•</span>
+              <span>Strong in core and advanced Java (JDBC & Servlets) with hands-on coding experience and internship or project experience</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-slate-400 mt-1">•</span>
+              <span>Build applications using Spring Boot & Microservices, design, code, test, and support applications, collaborate with team for problem solving</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-slate-400 mt-1">•</span>
+              <span>Competitive CTC as per market standards</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- CARD 3: JOB MATCH SCORE (Screenshot 1) -->
+        <div class="naukri-card bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Job match score</h3>
+          <div class="flex flex-wrap items-center gap-2.5 text-xs">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-semibold">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Early Applicant
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-600 border border-slate-200 rounded-full font-semibold">
+              <i data-lucide="x" class="w-3.5 h-3.5 text-slate-400"></i> Keyskills
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full font-semibold">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i> Location
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-50 text-slate-600 border border-slate-200 rounded-full font-semibold">
+              <i data-lucide="x" class="w-3.5 h-3.5 text-slate-400"></i> Work Experience
+            </span>
+          </div>
+        </div>
+
+        <!-- CARD 4: JOB DESCRIPTION & RESPONSIBILITIES (Screenshot 1) -->
+        <div class="naukri-card bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+          <h3 class="text-sm font-bold text-slate-900">Job description</h3>
+          
+          <div>
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wide">Role & responsibilities</h4>
+            <p class="text-xs font-semibold text-slate-500 mt-0.5">Role & responsibilities</p>
+            <ul id="jobResponsibilitiesList" class="space-y-2 text-xs text-slate-600 leading-relaxed font-medium mt-2">
+              <li class="flex items-start gap-2">
+                <span class="text-slate-400">•</span>
+                <span>Java Developer to build applications using Spring Boot & Microservices.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-slate-400">•</span>
+                <span>Designing, coding, testing, and supporting applications</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-slate-400">•</span>
+                <span>To work with other team mates for problem solving.</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Structured Details Matrix -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-2.5 gap-x-6 pt-3 border-t border-slate-100 text-xs">
+            <div>
+              <span class="text-slate-400 font-medium">Role:</span>
+              <span class="text-slate-800 font-semibold ml-1.5">Software Development - Other</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-medium">Industry Type:</span>
+              <span class="text-slate-800 font-semibold ml-1.5">IT Services & Consulting</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-medium">Department:</span>
+              <span class="text-slate-800 font-semibold ml-1.5">Engineering - Software & QA</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-medium">Employment Type:</span>
+              <span class="text-slate-800 font-semibold ml-1.5">Full Time, Permanent</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-medium">Role Category:</span>
+              <span class="text-slate-800 font-semibold ml-1.5">Software Development</span>
+            </div>
+            <div>
+              <span class="text-slate-400 font-medium">Education:</span>
+              <span class="text-slate-800 font-semibold ml-1.5">UG: Any Graduate, PG: Any Postgraduate</span>
+            </div>
+          </div>
+
+          <!-- Key Skills Section -->
+          <div class="pt-3 border-t border-slate-100">
+            <h5 class="text-xs font-bold text-slate-800 mb-2">Key Skills</h5>
+            <div id="jobSkillsChips" class="flex flex-wrap gap-1.5">
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">Java</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">Spring Boot</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">Microservices</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">JDBC</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">Servlets</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">Angular</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">SQL</span>
+              <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">Hibernate</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CARD 5: OTHER OPENINGS FROM COMPANY (Screenshot 2) -->
+        <div class="naukri-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors" onclick="loadJobById(2)">
+                Java Full Stack Developer (angular)
+              </h4>
+              <p class="text-xs font-semibold text-slate-600 mt-0.5">Ignitefortune Tech</p>
+              
+              <div class="flex items-center gap-1.5 text-xs text-slate-600 font-medium mt-2">
+                <i data-lucide="home" class="w-3.5 h-3.5 text-slate-400"></i>
+                <span>Remote</span>
+              </div>
+
+              <!-- Skills Tags -->
+              <div class="flex flex-wrap items-center gap-1.5 mt-3">
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">Full Stack</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">SQL</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">Javascript</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">Cs</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">CSS</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">SQL MySQL</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">Stack</span>
+                <span class="text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">Angular</span>
+              </div>
+
+              <p class="text-[11px] font-medium text-slate-400 mt-3">Posted 17 days ago</p>
+            </div>
+
+            <!-- Purple Company Logo (Screenshot 2) -->
+            <div class="w-11 h-11 shrink-0 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center font-bold text-xl shadow-2xs">
+              I
+            </div>
+          </div>
+        </div>
+
+        <!-- BREADCRUMBS & IEIL DISCLAIMER BOX (Screenshot 2) -->
+        <div class="space-y-4 pt-2">
+          <!-- Breadcrumb -->
+          <div class="text-xs font-semibold text-slate-500">
+            <a href="/" class="hover:text-[#275df5]">Home</a>
+            <span class="mx-1 text-slate-400">&gt;</span>
+            <span class="text-slate-700">Pune</span>
+          </div>
+
+          <!-- IEIL Legal Disclaimer Box (Exact words from Screenshot 2) -->
+          <div class="p-4 rounded-xl bg-white border border-slate-200 text-[11px] text-slate-500 leading-relaxed font-normal">
+            <p>
+              IEIL has taken all reasonable steps to ensure that information on this site is authentic. Applicants are advised to research bonafides of advertisers independently. IEIL shall not have any responsibility in this regard. We also recommend that you visit <a href="javascript:void(0)" class="text-[#275df5] hover:underline font-semibold">Security Guidelines</a> and <a href="javascript:void(0)" class="text-[#275df5] hover:underline font-semibold">Terms and Conditions</a> for more comprehensive information on this aspect. Please note that Naukri will not be responsible for any information you share on the company platform.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================== -->
+      <!-- RIGHT COLUMN: JOBS YOU MIGHT BE INTERESTED IN  -->
+      <!-- ============================================== -->
+      <div class="lg:col-span-4 space-y-4">
+        
+        <div class="naukri-card bg-white rounded-2xl border border-slate-200 p-5 shadow-xs">
+          <h3 class="text-sm font-bold text-slate-900 mb-3">Jobs you might be interested in</h3>
+          
+          <div id="recommendedJobsContainer" class="divide-y divide-slate-100">
+            
+            <!-- Recommended Job 1: Syntrek Technology -->
+            <div class="py-3.5 first:pt-0 last:pb-0">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="text-xs font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug" onclick="openApplyDirect('Java and J2Ee Developer & Fullstack Developer', 'Syntrek Technology')">
+                    Java and J2Ee Developer & Fullstack Developer
+                  </h4>
+                  <p class="text-[11px] font-semibold text-slate-700">Syntrek Technology</p>
+                  <p class="text-[10px] text-slate-400">Posted by Syntrex Technology</p>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                    <span>Pune, Hyderabad</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Posted 1 day ago</p>
+                </div>
+                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center font-bold text-sm shrink-0">
+                  S
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommended Job 2: Invenio Business Solutions -->
+            <div class="py-3.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="text-xs font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug" onclick="openApplyDirect('Associate Consultant Java', 'Invenio Business Solutions')">
+                    Associate Consultant Java
+                  </h4>
+                  <p class="text-[11px] font-semibold text-slate-700">Invenio Business Solution...</p>
+                  <div class="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded w-fit border border-amber-200">
+                    ★ 3.3 | 213 reviews
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                    <span>Hyderabad</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Posted 1 day ago</p>
+                </div>
+                <div class="w-9 h-9 rounded-xl bg-red-50 text-red-600 border border-red-200 flex items-center justify-center font-bold text-[10px] shrink-0 tracking-tighter">
+                  invenio
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommended Job 3: Pronative Ai -->
+            <div class="py-3.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="text-xs font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug" onclick="openApplyDirect('Junior IT Engineer - Intern', 'Pronative Ai')">
+                    Junior IT Engineer - Intern
+                  </h4>
+                  <p class="text-[11px] font-semibold text-slate-700">Pronative Ai</p>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                    <span>Chennai</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Posted 1 day ago</p>
+                </div>
+                <div class="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center font-bold text-sm shrink-0">
+                  P
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommended Job 4: Calanjiyam Consultancies -->
+            <div class="py-3.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="text-xs font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug" onclick="openApplyDirect('React and Spring Boot Technical Trainer', 'Calanjiyam Consultancies')">
+                    React and Spring Boot Technical Trainer
+                  </h4>
+                  <p class="text-[11px] font-semibold text-slate-700">Calanjiyam Consultancies ...</p>
+                  <div class="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded w-fit border border-amber-200">
+                    ★ 4.5 | 28 reviews
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                    <span>Madurai, Tiruppur, Salem, Chenn...</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Posted 1 day ago</p>
+                </div>
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold text-sm shrink-0">
+                  C
+                </div>
+              </div>
+            </div>
+
+            <!-- Recommended Job 5: Datanimics Technologies -->
+            <div class="py-3.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                  <h4 class="text-xs font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug" onclick="openApplyDirect('Junior Software Developer (Location- Bangalore)', 'Datanimics Technologies')">
+                    Junior Software Developer (Location- Bangalore)
+                  </h4>
+                  <p class="text-[11px] font-semibold text-slate-700">Datanimics Technologies</p>
+                  <div class="flex items-center gap-1 text-[10px] text-amber-700 font-bold bg-amber-50 px-1 py-0.2 rounded w-fit border border-amber-200">
+                    ★ 3.3 | 14 reviews
+                  </div>
+                  <div class="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                    <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                    <span>Bengaluru</span>
+                  </div>
+                  <p class="text-[10px] text-slate-400 mt-1">Posted 1 day ago</p>
+                </div>
+                <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 border border-purple-200 flex items-center justify-center font-bold text-sm shrink-0">
+                  D
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ============================================== -->
+  <!-- 4. NAUKRI CAMPUS FOOTER (Screenshot 2)         -->
+  <!-- ============================================== -->
+  <footer class="bg-white border-t border-slate-200 mt-12 pt-10 pb-6 text-xs text-slate-600">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Top 4 Columns Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-8 pb-10 border-b border-slate-100">
+        
+        <!-- Col 1: Logo & Connect with us -->
+        <div class="space-y-4">
+          <div class="flex items-baseline gap-1">
+            <span class="text-xl font-black text-[#0f2c59] lowercase">naukri</span>
+            <span class="text-lg font-bold text-[#ff6b4a] lowercase">campus</span>
+          </div>
+          <div class="space-y-2">
+            <p class="text-xs font-bold text-slate-800">Connect with us</p>
+            <div class="flex items-center gap-3 text-slate-500">
+              <a href="https://facebook.com" target="_blank" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center hover:bg-[#275df5] hover:text-white transition-colors">
+                <i data-lucide="facebook" class="w-3.5 h-3.5"></i>
+              </a>
+              <a href="https://instagram.com" target="_blank" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors">
+                <i data-lucide="instagram" class="w-3.5 h-3.5"></i>
+              </a>
+              <a href="https://twitter.com" target="_blank" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-colors">
+                <i data-lucide="twitter" class="w-3.5 h-3.5"></i>
+              </a>
+              <a href="https://linkedin.com" target="_blank" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center hover:bg-blue-700 hover:text-white transition-colors">
+                <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Col 2: About us links -->
+        <div class="space-y-2">
+          <p class="font-bold text-slate-900 mb-1">Company</p>
+          <ul class="space-y-2 text-slate-500 font-medium">
+            <li><a href="/" class="hover:text-[#275df5]">About us</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Careers</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Employer home</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Sitemap</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Credits</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Help center links -->
+        <div class="space-y-2">
+          <p class="font-bold text-slate-900 mb-1">Support</p>
+          <ul class="space-y-2 text-slate-500 font-medium">
+            <li><a href="/" class="hover:text-[#275df5]">Help center</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Summons/Notices</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Grievances</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Report issue</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Legal policy links -->
+        <div class="space-y-2">
+          <p class="font-bold text-slate-900 mb-1">Legal</p>
+          <ul class="space-y-2 text-slate-500 font-medium">
+            <li><a href="/" class="hover:text-[#275df5]">Privacy policy</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Terms & conditions</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Fraud alert</a></li>
+            <li><a href="/" class="hover:text-[#275df5]">Trust & safety</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 5: App Download Box (Screenshot 2) -->
+        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+          <p class="text-xs font-bold text-slate-900">Apply on the go</p>
+          <p class="text-[11px] text-slate-500">Get real-time job updates on our App</p>
+          <div class="space-y-2 pt-1">
+            <a href="https://play.google.com" target="_blank" class="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg hover:bg-slate-800 transition-colors">
+              <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+              <div class="text-left leading-none">
+                <span class="text-[8px] uppercase tracking-wider block text-slate-400">Get it on</span>
+                <span class="text-[11px] font-bold">Google Play</span>
+              </div>
+            </a>
+            <a href="https://apple.com/app-store" target="_blank" class="flex items-center gap-2 px-3 py-1.5 bg-black text-white rounded-lg hover:bg-slate-800 transition-colors">
+              <i data-lucide="apple" class="w-4 h-4 fill-white"></i>
+              <div class="text-left leading-none">
+                <span class="text-[8px] uppercase tracking-wider block text-slate-400">Download on the</span>
+                <span class="text-[11px] font-bold">App Store</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Strip: InfoEdge Legal & Business Logos (Screenshot 2) -->
+      <div class="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div class="flex items-center gap-3">
+          <span class="font-extrabold text-[#0f2c59] text-base tracking-tighter">infoedge</span>
+          <span class="text-slate-400">All trademarks are the property of their respective owners. All rights reserved 2026 Info Edge (India) Ltd.</span>
+        </div>
+        <div class="flex items-center gap-4 text-xs font-semibold">
+          <span class="text-slate-400 font-medium">Our businesses</span>
+          <span class="font-bold text-emerald-600">doselect</span>
+          <span class="font-bold text-pink-600">minis</span>
+          <span class="font-bold text-amber-600">codingninjas</span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ============================================== -->
+  <!-- 5. COOKIE CONSENT BANNER (Screenshot 2)        -->
+  <!-- ============================================== -->
+  <div id="cookieBanner" class="fixed bottom-0 left-0 right-0 z-50 bg-[#0f2c59]/95 backdrop-blur-md text-white py-3 px-4 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+    <div class="max-w-4xl">
+      We use cookies to improve your experience. By continuing to browse the site, you agree to our <a href="javascript:void(0)" class="underline font-bold text-blue-300">Privacy Policy</a> & <a href="javascript:void(0)" class="underline font-bold text-blue-300">Cookie Policy</a>.
+    </div>
+    <button onclick="dismissCookieBanner()" class="px-5 py-1.5 bg-[#275df5] hover:bg-[#185adb] text-white font-bold rounded-full text-xs shadow-xs transition-all cursor-pointer shrink-0">
+      Got it
+    </button>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 6. APPLICATION SUBMISSION MODAL                -->
+  <!-- ============================================== -->
+  <div id="applyModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Apply for Job</h3>
+          <p id="modalSubTitle" class="text-xs text-slate-500 font-medium">Java Developer • Ignitefortune Tech</p>
+        </div>
+        <button onclick="closeApplyModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="applyForm" onsubmit="submitJobApplication(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Full Name *</label>
+          <input type="text" id="applyFullName" required placeholder="e.g. Rahul Sharma" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Email ID *</label>
+          <input type="email" id="applyEmail" required placeholder="candidate@email.com" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Mobile Number *</label>
+          <input type="tel" id="applyPhone" required placeholder="+91 98765 43210" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Experience *</label>
+          <select id="applyExpSelect" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none font-medium">
+            <option value="Fresher / 0 years">Fresher / 0 years</option>
+            <option value="0 - 1 years" selected>0 - 1 years</option>
+            <option value="1 - 3 years">1 - 3 years</option>
+            <option value="3+ years">3+ years</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Attach Resume / CV</label>
+          <input type="file" id="applyResumeFile" class="w-full text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-[#275df5] hover:file:bg-blue-100 cursor-pointer">
+        </div>
+
+        <button type="submit" id="submitApplyBtn" class="w-full mt-2 py-2.5 bg-[#275df5] hover:bg-[#185adb] text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer">
+          Submit Application
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- 7. CANDIDATE AUTH MODAL (Login / Register)     -->
+  <!-- ============================================== -->
+  <div id="authModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div>
+          <h3 id="authModalTitle" class="text-base font-bold text-slate-900">Candidate Login</h3>
+          <p class="text-[11px] text-slate-500">Find and apply for top tech opportunities</p>
+        </div>
+        <button onclick="closeAuthModal()" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="flex bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs transition-all">Login</button>
+        <button id="authTabRegister" onclick="switchAuthTab('register')" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all">Register</button>
+      </div>
+
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3 text-xs">
+        <div id="authNameField" class="hidden">
+          <label class="block font-bold text-slate-700 mb-1">Full Name *</label>
+          <input type="text" id="authNameInput" placeholder="e.g. Rahul Sharma" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Email ID *</label>
+          <input type="email" id="authEmailInput" required placeholder="Enter registered Email ID" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Password *</label>
+          <input type="password" id="authPassInput" required placeholder="Enter password" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+        <div id="authPhoneField" class="hidden">
+          <label class="block font-bold text-slate-700 mb-1">Mobile Number</label>
+          <input type="tel" id="authPhoneInput" placeholder="+91 98765 43210" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-[#275df5] outline-none">
+        </div>
+
+        <button type="submit" id="authSubmitBtn" class="w-full py-2.5 bg-[#275df5] hover:bg-[#185adb] text-white font-bold rounded-xl text-xs shadow-md transition-all cursor-pointer">
+          Login
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- ============================================== -->
+  <!-- 8. JAVASCRIPT LOGIC & SQLite INTEGRATION        -->
+  <!-- ============================================== -->
+  <script>
+    let currentJob = null;
+    let authToken = localStorage.getItem("naukri_auth_token") || localStorage.getItem("worksphere_token") || null;
+    let currentUser = null;
+    let authMode = "login";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      initScrollWatcher();
+      await checkAuthStatus();
+      loadJobFromUrlParam();
+      lucide.createIcons();
+    });
+
+    // 1. Scroll listener for sticky floating header (Screenshot 2)
+    function initScrollWatcher() {
+      const stickyHeader = document.getElementById("stickyHeader");
+      const mainJobCard = document.getElementById("mainJobCard");
+
+      window.addEventListener("scroll", () => {
+        if (!mainJobCard || !stickyHeader) return;
+        const rect = mainJobCard.getBoundingClientRect();
+        if (rect.bottom < 80) {
+          stickyHeader.classList.remove("sticky-bar-hidden");
+          stickyHeader.classList.add("sticky-bar-active");
+        } else {
+          stickyHeader.classList.remove("sticky-bar-active");
+          stickyHeader.classList.add("sticky-bar-hidden");
+        }
+      });
+    }
+
+    // 2. Auth State Check
+    async function checkAuthStatus() {
+      if (!authToken) return;
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (data.success && data.user) {
+          currentUser = data.user;
+          const avatarElem = document.getElementById("navAvatarImg");
+          if (avatarElem) {
+            avatarElem.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.full_name || currentUser.email) + "&background=275df5&color=fff";
+          }
+        }
+      } catch (e) {
+        console.error("Auth check failed:", e);
+      }
+    }
+
+    // 3. Load Job Details dynamically
+    async function loadJobFromUrlParam() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const jobId = urlParams.get('id');
+
+      if (jobId) {
+        await loadJobById(jobId);
+      } else {
+        // Default to Java Developer (Screenshot 1)
+        try {
+          const res = await fetch('/api/jobs');
+          const data = await res.json();
+          if (data.success && data.jobs && data.jobs.length > 0) {
+            const javaJob = data.jobs.find(j => j.title.toLowerCase().includes('java developer') && j.company.toLowerCase().includes('ignitefortune')) || data.jobs[0];
+            populateJobDetails(javaJob);
+          }
+        } catch (e) {
+          console.error("Could not load default job:", e);
+        }
+      }
+    }
+
+    async function loadJobById(id) {
+      try {
+        const res = await fetch(`/api/jobs/${id}`);
+        const data = await res.json();
+        if (data.success && data.job) {
+          populateJobDetails(data.job);
+        }
+      } catch (e) {
+        console.error("Load job by id error:", e);
+      }
+    }
+
+    function populateJobDetails(job) {
+      currentJob = job;
+
+      // Update Page Title
+      document.title = `${job.title} - ${job.company} - ${job.location} | Naukri Campus`;
+
+      // Main Card
+      document.getElementById("jobTitleElem").innerText = job.title;
+      document.getElementById("jobCompanyElem").innerText = job.company;
+      document.getElementById("jobExpElem").innerText = (job.category && job.category.includes('Fresher')) ? "0 - 1 years" : "0 - 2 years";
+      document.getElementById("jobSalaryElem").innerText = job.salary || "₹ Not Disclosed";
+      document.getElementById("jobWorkModeElem").innerText = job.work_mode || "Remote";
+      document.getElementById("jobLocationElem").innerText = job.location || "Hiring office located in Pune";
+
+      // Logo
+      const logoContainer = document.getElementById("jobLogoElem");
+      const stickyLogo = document.getElementById("stickyCompanyLogo");
+      if (job.initials) {
+        logoContainer.innerText = job.initials;
+        stickyLogo.innerText = job.initials;
+      }
+
+      // Sticky Header
+      document.getElementById("stickyJobTitle").innerText = job.title;
+      document.getElementById("stickyJobCompany").innerText = job.company;
+
+      // Highlights
+      const hlList = document.getElementById("jobHighlightsList");
+      if (job.requirements && job.requirements.length > 0) {
+        hlList.innerHTML = job.requirements.map(r => `
+          <li class="flex items-start gap-2">
+            <span class="text-slate-400 mt-1">•</span>
+            <span>${escapeHtml(r)}</span>
+          </li>
+        `).join("");
+      }
+
+      // Responsibilities
+      const respList = document.getElementById("jobResponsibilitiesList");
+      if (job.responsibilities && job.responsibilities.length > 0) {
+        respList.innerHTML = job.responsibilities.map(r => `
+          <li class="flex items-start gap-2">
+            <span class="text-slate-400 mt-1">•</span>
+            <span>${escapeHtml(r)}</span>
+          </li>
+        `).join("");
+      }
+
+      // Skills Chips
+      const skillsContainer = document.getElementById("jobSkillsChips");
+      if (job.skills && job.skills.length > 0) {
+        skillsContainer.innerHTML = job.skills.map(s => `
+          <span class="text-[11px] font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-md transition-colors cursor-pointer">${escapeHtml(s)}</span>
+        `).join("");
+      }
+
+      lucide.createIcons();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 4. Apply Workflow
+    function handleJobApplyClick() {
+      if (!currentJob) return;
+
+      document.getElementById("modalSubTitle").innerText = `${currentJob.title} • ${currentJob.company}`;
+      
+      if (currentUser) {
+        document.getElementById("applyFullName").value = currentUser.full_name || "";
+        document.getElementById("applyEmail").value = currentUser.email || "";
+        document.getElementById("applyPhone").value = currentUser.phone || "";
+      }
+
+      document.getElementById("applyModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeApplyModal() {
+      document.getElementById("applyModal").classList.add("hidden");
+    }
+
+    async function submitJobApplication(e) {
+      e.preventDefault();
+      if (!currentJob) return;
+
+      const name = document.getElementById("applyFullName").value.trim();
+      const email = document.getElementById("applyEmail").value.trim();
+      const phone = document.getElementById("applyPhone").value.trim();
+      const exp = document.getElementById("applyExpSelect").value;
+      const fileInput = document.getElementById("applyResumeFile");
+      const resumeName = fileInput.files[0] ? fileInput.files[0].name : "Resume.pdf";
+      const btn = document.getElementById("submitApplyBtn");
+
+      btn.disabled = true;
+      btn.innerText = "Submitting to SQLite Database...";
+
+      try {
+        const res = await fetch('/api/applications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authToken ? `Bearer ${authToken}` : ''
+          },
+          body: JSON.stringify({
+            job_id: currentJob.id,
+            candidate_name: name,
+            candidate_email: email,
+            candidate_phone: phone,
+            experience: exp,
+            resume_filename: resumeName
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          closeApplyModal();
+          showToast("Application submitted successfully to SQLite database!", "success");
+          
+          // Update buttons to Applied
+          const mainApply = document.getElementById("mainApplyBtn");
+          const stickyApply = document.getElementById("stickyApplyBtn");
+          if (mainApply) {
+            mainApply.innerText = "Applied ✓";
+            mainApply.className = "px-7 py-2 bg-emerald-600 text-white font-bold rounded-full text-xs cursor-default";
+            mainApply.disabled = true;
+          }
+          if (stickyApply) {
+            stickyApply.innerText = "Applied ✓";
+            stickyApply.className = "px-7 py-2 bg-emerald-600 text-white font-bold rounded-full text-xs cursor-default";
+            stickyApply.disabled = true;
+          }
+        } else {
+          if (res.status === 401) {
+            closeApplyModal();
+            showToast("Application submit karne ke liye pehle Login karein.", "warning");
+            openAuthModal("login");
+          } else {
+            showToast(data.error || "Application submission failed.", "error");
+          }
+        }
+      } catch (err) {
+        showToast("Server connection error.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Submit Application";
+      }
+    }
+
+    // 5. Bookmark / Save Job
+    async function toggleSaveCurrentJob() {
+      if (!currentJob) return;
+      if (!authToken) {
+        showToast("Job save karne ke liye pehle Login karein.", "warning");
+        openAuthModal("login");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/jobs/${currentJob.id}/save`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${authToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const saveText = document.getElementById("saveJobText");
+          if (data.saved) {
+            saveText.innerText = "Saved ✓";
+            showToast("Job saved to your profile!", "success");
+          } else {
+            saveText.innerText = "Save";
+            showToast("Job removed from saved list.", "info");
+          }
+        }
+      } catch (e) {
+        showToast("Error saving job.", "error");
+      }
+    }
+
+    // 6. Direct Apply for Recommended Jobs
+    function openApplyDirect(title, company) {
+      document.getElementById("modalSubTitle").innerText = `${title} • ${company}`;
+      if (currentUser) {
+        document.getElementById("applyFullName").value = currentUser.full_name || "";
+        document.getElementById("applyEmail").value = currentUser.email || "";
+        document.getElementById("applyPhone").value = currentUser.phone || "";
+      }
+      document.getElementById("applyModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function sendMeJobsAlert() {
+      showToast("Job alert configured for similar Java Developer roles!", "success");
+    }
+
+    function handleCampusSearch() {
+      const q = document.getElementById("campusSearchInput").value.trim();
+      window.location.href = `/?q=${encodeURIComponent(q)}`;
+    }
+
+    function handleProfileClick() {
+      if (currentUser) {
+        if (currentUser.is_admin || (currentUser.email && currentUser.email.includes("admin"))) {
+          window.location.href = "/admin";
+        } else {
+          showToast(`Logged in as ${currentUser.full_name || currentUser.email}`, "info");
+        }
+      } else {
+        openAuthModal("login");
+      }
+    }
+
+    // 7. Auth Modal
+    function openAuthModal(mode) {
+      authMode = mode || "login";
+      switchAuthTab(authMode);
+      document.getElementById("authModal").classList.remove("hidden");
+    }
+
+    function closeAuthModal() {
+      document.getElementById("authModal").classList.add("hidden");
+    }
+
+    function switchAuthTab(mode) {
+      authMode = mode;
+      const tabLogin = document.getElementById("authTabLogin");
+      const tabReg = document.getElementById("authTabRegister");
+      const nameFld = document.getElementById("authNameField");
+      const phoneFld = document.getElementById("authPhoneField");
+      const submitBtn = document.getElementById("authSubmitBtn");
+      const modalTitle = document.getElementById("authModalTitle");
+
+      if (mode === 'login') {
+        tabLogin.className = "flex-1 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs transition-all";
+        tabReg.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all";
+        nameFld.classList.add("hidden");
+        phoneFld.classList.add("hidden");
+        submitBtn.innerText = "Login";
+        modalTitle.innerText = "Candidate Login";
+      } else {
+        tabReg.className = "flex-1 py-1.5 rounded-lg bg-white text-slate-900 shadow-xs transition-all";
+        tabLogin.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition-all";
+        nameFld.classList.remove("hidden");
+        phoneFld.classList.remove("hidden");
+        submitBtn.innerText = "Register Free";
+        modalTitle.innerText = "Register Candidate Account";
+      }
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById("authEmailInput").value.trim().toLowerCase();
+      const password = document.getElementById("authPassInput").value;
+      const full_name = document.getElementById("authNameInput").value.trim();
+      const phone = document.getElementById("authPhoneInput").value.trim();
+      const btn = document.getElementById("authSubmitBtn");
+
+      btn.disabled = true;
+      btn.innerText = "Processing...";
+
+      const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const payload = authMode === 'login' ? { email, password } : { email, password, full_name, phone };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success && data.token) {
+          authToken = data.token;
+          currentUser = data.user;
+          localStorage.setItem("naukri_auth_token", authToken);
+          localStorage.setItem("worksphere_token", authToken);
+          closeAuthModal();
+
+          if (data.is_admin || (currentUser && currentUser.is_admin)) {
+            window.location.href = "/admin";
+            return;
+          }
+
+          showToast(data.message || "Login successful!", "success");
+          const avatarElem = document.getElementById("navAvatarImg");
+          if (avatarElem) {
+            avatarElem.src = "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser.full_name || currentUser.email) + "&background=275df5&color=fff";
+          }
+        } else {
+          showToast(data.error || "Authentication error", "error");
+        }
+      } catch (err) {
+        showToast("Server connection error.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = authMode === 'login' ? "Login" : "Register Free";
+      }
+    }
+
+    function dismissCookieBanner() {
+      document.getElementById("cookieBanner").classList.add("hidden");
+    }
+
+    function showToast(msg, type = "info") {
+      const container = document.getElementById("toastContainer");
+      if (!container) return;
+      const t = document.createElement("div");
+      const bg = type === "success" ? "bg-emerald-600 text-white" :
+                 type === "error" ? "bg-rose-600 text-white" :
+                 type === "warning" ? "bg-amber-600 text-white" : "bg-slate-900 text-white";
+      t.className = `${bg} px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold pointer-events-auto flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0`;
+      t.innerHTML = `<span>${escapeHtml(msg)}</span>`;
+      container.appendChild(t);
+
+      requestAnimationFrame(() => {
+        t.classList.remove("translate-y-2", "opacity-0");
+      });
+
+      setTimeout(() => {
+        t.classList.add("opacity-0", "translate-y-2");
+        setTimeout(() => t.remove(), 300);
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
