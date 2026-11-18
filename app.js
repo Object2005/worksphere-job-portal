@@ -134,7 +134,7 @@ function renderNaukriJobCards(jobs) {
         <!-- Top Row: Title + Company Logo on Right -->
         <div class="flex items-start justify-between gap-3">
           <div class="space-y-1">
-            <h3 onclick="openApplyModalForJob(${j.id})" class="text-[15px] font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug">
+            <h3 onclick="viewJobDetails(${j.id})" class="text-[15px] font-bold text-slate-900 hover:text-[#275df5] cursor-pointer transition-colors leading-snug">
               ${escapeHtml(j.title)}
             </h3>
             <div class="flex items-center gap-2 text-xs text-slate-600 font-semibold">
@@ -146,7 +146,7 @@ function renderNaukriJobCards(jobs) {
           </div>
 
           <!-- Official Company Logo on Right (Matching Screenshot 2) -->
-          <div class="w-11 h-11 shrink-0 rounded-2xl bg-white border border-slate-100 shadow-2xs flex items-center justify-center p-1.5">
+          <div onclick="viewJobDetails(${j.id})" class="w-11 h-11 shrink-0 rounded-2xl bg-white border border-slate-100 shadow-2xs flex items-center justify-center p-1.5 cursor-pointer hover:border-blue-200 transition-colors">
             ${logoHtml}
           </div>
         </div>
@@ -627,6 +627,10 @@ async function fetchAdminData() {
 // ==============================================
 // 5. APPLICATION SUBMISSION & SAVED JOBS
 // ==============================================
+function viewJobDetails(jobId) {
+  window.location.href = `/job.html?id=${jobId}`;
+}
+
 function openApplyModalForJob(jobId) {
   if (!authToken || !currentUser) {
     showToast("Application submit karne ke liye pehle Login karein.", "warning");
