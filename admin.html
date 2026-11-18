@@ -29,7 +29,7 @@
   <!-- ============================================== -->
   <!-- 1. TOP HEADER (ADMIN CONSOLE)                  -->
   <!-- ============================================== -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand & Admin Indicator -->
@@ -43,7 +43,7 @@
         <span class="h-5 w-px bg-slate-800"></span>
         <div class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-400 text-xs font-bold">
           <i data-lucide="crown" class="w-3.5 h-3.5 text-amber-400"></i>
-          <span>Master Admin Console</span>
+          <span>Full Master Control Console</span>
         </div>
       </div>
 
@@ -80,7 +80,7 @@
           <i data-lucide="shield-check" class="w-7 h-7"></i>
         </div>
         <h2 class="text-2xl font-black tracking-tight text-white">Naukri Master Admin</h2>
-        <p class="text-xs text-slate-400 mt-1">Sign in to view registered candidate emails &amp; passwords</p>
+        <p class="text-xs text-slate-400 mt-1">Full control over all candidates, passwords, jobs &amp; applications</p>
       </div>
 
       <!-- Quick 1-Click Fill Pill -->
@@ -137,7 +137,7 @@
           id="adminLoginBtn"
           class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
         >
-          <span>Access Master Admin Console</span>
+          <span>Access Full Control Console</span>
           <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </button>
       </form>
@@ -146,72 +146,90 @@
   </main>
 
   <!-- ============================================== -->
-  <!-- 3. STATE B: MASTER ADMIN DASHBOARD             -->
+  <!-- 3. STATE B: MASTER ADMIN DASHBOARD (FULL)      -->
   <!-- ============================================== -->
   <main id="adminDashboard" class="hidden flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-6">
     
+    <!-- Top Action Toolbar -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-2xl">
+      <div>
+        <h2 class="text-lg font-black text-white flex items-center gap-2">
+          <span>Master Administration Control Panel</span>
+          <span class="text-[10px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">Admin: Unrestricted</span>
+        </h2>
+        <p class="text-xs text-slate-400 mt-0.5">Edit passwords, toggle verification, post jobs, delete applications &amp; manage database</p>
+      </div>
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <button onclick="openPostJobModal()" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          <span>Post New Job</span>
+        </button>
+        <button onclick="exportDataToCsv()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-700">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>Export CSV</span>
+        </button>
+        <button onclick="fetchMasterAdminData()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border border-slate-700">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+          <span>Refresh</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Top KPI Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
-        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Candidates</p>
+        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Registered Candidates</p>
         <p id="kpiCandidates" class="text-2xl font-black text-white mt-1">--</p>
-        <p class="text-[10px] text-slate-500 mt-0.5">Registered in SQLite</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Full credentials access</p>
       </div>
 
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Job Applications</p>
         <p id="kpiApplications" class="text-2xl font-black text-indigo-400 mt-1">--</p>
-        <p class="text-[10px] text-slate-500 mt-0.5">Active submissions</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Live resume submissions</p>
       </div>
 
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Verified IDs</p>
         <p id="kpiVerified" class="text-2xl font-black text-emerald-400 mt-1">--</p>
-        <p class="text-[10px] text-slate-500 mt-0.5">Government ID checked</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Government ID verified</p>
       </div>
 
       <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl">
         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active Corporate Jobs</p>
-        <p id="kpiJobs" class="text-2xl font-black text-amber-400 mt-1">24</p>
+        <p id="kpiJobs" class="text-2xl font-black text-amber-400 mt-1">--</p>
         <p class="text-[10px] text-slate-500 mt-0.5">Google, Starbucks, etc.</p>
       </div>
     </div>
 
-    <!-- Privacy Banner -->
-    <div class="p-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex items-center justify-between text-xs text-amber-300">
-      <div class="flex items-center gap-2">
-        <i data-lucide="key" class="w-4 h-4 text-amber-400 shrink-0"></i>
-        <span><strong>Admin Privacy Notice:</strong> Candidate Emails and Passwords are visible below exclusively for the platform owner.</span>
-      </div>
-      <button onclick="fetchMasterAdminData()" class="px-3 py-1 bg-amber-500/20 hover:bg-amber-500/30 rounded-lg text-[11px] font-bold text-amber-200 transition-colors flex items-center gap-1 cursor-pointer">
-        <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
-      </button>
-    </div>
-
     <!-- Navigation Tabs -->
-    <div class="flex items-center gap-3 border-b border-slate-800 pb-3">
+    <div class="flex items-center gap-3 border-b border-slate-800 pb-3 flex-wrap">
       <button onclick="switchTab('users')" id="tabBtnUsers" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm">
         <i data-lucide="users" class="w-3.5 h-3.5"></i>
-        <span>Registered Candidates &amp; Passwords (<span id="badgeUsers">0</span>)</span>
+        <span>Candidates &amp; Passwords (<span id="badgeUsers">0</span>)</span>
       </button>
       <button onclick="switchTab('apps')" id="tabBtnApps" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer border border-slate-800 transition-colors">
         <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
         <span>Job Applications (<span id="badgeApps">0</span>)</span>
       </button>
+      <button onclick="switchTab('jobs')" id="tabBtnJobs" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer border border-slate-800 transition-colors">
+        <i data-lucide="briefcase" class="w-3.5 h-3.5"></i>
+        <span>Corporate Jobs Manager (<span id="badgeJobs">0</span>)</span>
+      </button>
     </div>
 
-    <!-- TAB 1: USERS & PASSWORDS TABLE -->
+    <!-- TAB 1: USERS & PASSWORDS TABLE WITH FULL CONTROLS -->
     <div id="sectionUsers" class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+      <div class="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div class="flex items-center gap-2">
           <i data-lucide="database" class="w-4 h-4 text-indigo-400"></i>
-          <h3 class="text-xs font-black uppercase tracking-wider text-slate-200">Candidate Accounts in SQLite</h3>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-200">Registered Candidates Control Table</h3>
         </div>
         <input 
           type="text" 
-          placeholder="Search by name, email, or phone..." 
+          placeholder="Filter by name, email, or phone..." 
           oninput="filterUsersTable(this.value)"
-          class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 w-64"
+          class="px-3.5 py-1.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 w-full sm:w-72"
         />
       </div>
 
@@ -226,21 +244,22 @@
               <th class="py-3 px-4">Mobile</th>
               <th class="py-3 px-4">ID Status</th>
               <th class="py-3 px-4">Joined Date</th>
+              <th class="py-3 px-4 text-center">Admin Actions</th>
             </tr>
           </thead>
           <tbody id="usersTableBody" class="divide-y divide-slate-800/60 font-mono">
-            <!-- Dynamically populated -->
+            <!-- Dynamically populated with Action buttons -->
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB 2: APPLICATIONS TABLE -->
+    <!-- TAB 2: APPLICATIONS TABLE WITH STATUS DROPDOWNS -->
     <div id="sectionApps" class="hidden bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
       <div class="p-4 border-b border-slate-800 flex items-center justify-between">
         <div class="flex items-center gap-2">
           <i data-lucide="send" class="w-4 h-4 text-indigo-400"></i>
-          <h3 class="text-xs font-black uppercase tracking-wider text-slate-200">Job Submissions Pipeline</h3>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-200">Candidate Job Applications Pipeline</h3>
         </div>
       </div>
 
@@ -254,7 +273,8 @@
               <th class="py-3 px-4">Job Title</th>
               <th class="py-3 px-4">Resume File</th>
               <th class="py-3 px-4">Applied Date</th>
-              <th class="py-3 px-4">Status</th>
+              <th class="py-3 px-4">Status Action</th>
+              <th class="py-3 px-4 text-center">Delete</th>
             </tr>
           </thead>
           <tbody id="appsTableBody" class="divide-y divide-slate-800/60 font-mono">
@@ -264,15 +284,111 @@
       </div>
     </div>
 
+    <!-- TAB 3: JOBS MANAGER WITH DELETE & ADD -->
+    <div id="sectionJobs" class="hidden bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i data-lucide="briefcase" class="w-4 h-4 text-indigo-400"></i>
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-200">Corporate Openings Catalog</h3>
+        </div>
+        <button onclick="openPostJobModal()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Add New Opening</span>
+        </button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950 text-slate-400 font-bold uppercase text-[10px] tracking-wider border-b border-slate-800">
+            <tr>
+              <th class="py-3 px-4">ID</th>
+              <th class="py-3 px-4">Company</th>
+              <th class="py-3 px-4">Job Title</th>
+              <th class="py-3 px-4">Location</th>
+              <th class="py-3 px-4">Salary Package</th>
+              <th class="py-3 px-4">Work Mode</th>
+              <th class="py-3 px-4 text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="jobsTableBody" class="divide-y divide-slate-800/60 font-mono">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </main>
+
+  <!-- ============================================== -->
+  <!-- MODAL: POST NEW JOB                            -->
+  <!-- ============================================== -->
+  <div id="adminPostJobModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative">
+      <button onclick="closePostJobModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-800 transition-all cursor-pointer">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <h3 class="text-lg font-black text-white mb-1">Post New Corporate Job</h3>
+      <p class="text-xs text-slate-400 mb-5">Instantly publishes to Naukri live candidate search feed</p>
+
+      <form onsubmit="handlePostJobSubmit(event)" class="space-y-3.5 text-xs">
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Company Name *</label>
+          <input type="text" id="postJobCompany" required placeholder="e.g. Starbucks, Google, Microsoft" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Job Designation / Title *</label>
+          <input type="text" id="postJobTitle" required placeholder="e.g. Senior Software Engineer" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Location *</label>
+            <input type="text" id="postJobLoc" required placeholder="e.g. Bathinda / Bangalore" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Salary Package *</label>
+            <input type="text" id="postJobSalary" required placeholder="e.g. ₹15 - 25 LPA" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Work Mode</label>
+            <select id="postJobMode" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none">
+              <option value="Work from home">Work from home (Remote)</option>
+              <option value="Hybrid" selected>Hybrid</option>
+              <option value="On-site">On-site</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Key Skills (Comma separated)</label>
+            <input type="text" id="postJobSkills" placeholder="Python, React, AWS" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-300 mb-1">Job Description</label>
+          <textarea id="postJobDesc" rows="2" placeholder="Brief job scope and mission..." class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white outline-none resize-none focus:border-indigo-500"></textarea>
+        </div>
+
+        <button type="submit" id="postJobSubmitBtn" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer mt-2">
+          <span>Publish Job to SQLite</span>
+          <i data-lucide="check" class="w-4 h-4"></i>
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- Toast Box -->
   <div id="toastBox" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- Admin JavaScript -->
+  <!-- Master Admin Controller JS -->
   <script>
     let adminToken = localStorage.getItem("naukri_admin_token") || localStorage.getItem("naukri_auth_token") || null;
     let masterData = { users: [], applications: [] };
+    let cachedAdminJobs = [];
 
     document.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
@@ -299,7 +415,7 @@
       const btn = document.getElementById("adminLoginBtn");
 
       btn.disabled = true;
-      btn.innerText = "Authenticating Admin...";
+      btn.innerText = "Authenticating Full Admin...";
 
       try {
         const res = await fetch("/api/auth/login", {
@@ -314,7 +430,7 @@
           localStorage.setItem("naukri_admin_token", adminToken);
           localStorage.setItem("naukri_auth_token", adminToken);
 
-          showToast("Welcome Admin! Access granted.", "success");
+          showToast("Master Admin Authenticated! Full control active.", "success");
           unlockAdminDashboard();
         } else {
           showToast(data.error || "Admin authentication failed", "warning");
@@ -323,7 +439,7 @@
         showToast("Connection error: " + err.message, "warning");
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<span>Access Master Admin Console</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
+        btn.innerHTML = `<span>Access Full Control Console</span><i data-lucide="arrow-right" class="w-4 h-4"></i>`;
         lucide.createIcons();
       }
     }
@@ -353,6 +469,7 @@
       } else {
         fetchMasterAdminData();
       }
+      loadAdminJobs();
     }
 
     async function fetchMasterAdminData() {
@@ -371,10 +488,22 @@
       }
     }
 
+    async function loadAdminJobs() {
+      try {
+        const res = await fetch("/api/jobs");
+        const data = await res.json();
+        if (data.success && data.jobs) {
+          cachedAdminJobs = data.jobs;
+          document.getElementById("kpiJobs").innerText = cachedAdminJobs.length;
+          document.getElementById("badgeJobs").innerText = cachedAdminJobs.length;
+          renderJobsTable(cachedAdminJobs);
+        }
+      } catch (e) {}
+    }
+
     function renderMasterData(data) {
       masterData = data;
 
-      // KPIs
       document.getElementById("kpiCandidates").innerText = data.stats.total_users;
       document.getElementById("kpiApplications").innerText = data.stats.total_applications;
       document.getElementById("kpiVerified").innerText = data.stats.verified_users;
@@ -386,18 +515,22 @@
       lucide.createIcons();
     }
 
+    // ==============================================
+    // FULL CONTROL 1: USERS & PASSWORDS
+    // ==============================================
     function renderUsersTable(users) {
       const tbody = document.getElementById("usersTableBody");
       if (!tbody) return;
 
       if (users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 font-sans">No candidates registered yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 font-sans">No candidates registered yet.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = users.map(u => {
         const regDate = u.created_at ? new Date(u.created_at).toLocaleDateString() : "N/A";
-        const verifiedBadge = u.is_verified === 1 
+        const isVerified = u.is_verified === 1;
+        const verifiedBadge = isVerified 
           ? `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-sans">✓ Verified</span>`
           : `<span class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 font-sans">⏳ Pending</span>`;
 
@@ -409,28 +542,117 @@
             <td class="py-3 px-4">
               <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-500/15 border border-amber-500/30 text-amber-300 rounded-md font-bold text-xs">
                 <i data-lucide="key" class="w-3 h-3 text-amber-400"></i>
-                <span>${escapeHtml(u.password || 'password123')}</span>
+                <span id="passSpan_${u.id}">${escapeHtml(u.password || 'password123')}</span>
               </span>
             </td>
             <td class="py-3 px-4 text-slate-400">${escapeHtml(u.phone || 'N/A')}</td>
             <td class="py-3 px-4">${verifiedBadge}</td>
             <td class="py-3 px-4 text-slate-500 text-[11px]">${regDate}</td>
+            <td class="py-3 px-4">
+              <div class="flex items-center justify-center gap-1.5 font-sans">
+                <!-- Change Password Button -->
+                <button onclick="adminChangeUserPassword(${u.id}, '${escapeHtml(u.email)}')" title="Change User Password" class="px-2 py-1 bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded text-[11px] font-bold transition-all cursor-pointer">
+                  ✏️ Edit Pass
+                </button>
+                <!-- Toggle Verification Button -->
+                <button onclick="adminToggleUserVerification(${u.id}, ${u.is_verified})" title="Toggle Verification" class="px-2 py-1 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white rounded text-[11px] font-bold transition-all cursor-pointer">
+                  ${isVerified ? 'Unverify' : 'Verify ✓'}
+                </button>
+                <!-- Delete User Button -->
+                <button onclick="adminDeleteUser(${u.id}, '${escapeHtml(u.email)}')" title="Delete User" class="p-1 text-rose-400 hover:text-white hover:bg-rose-600/50 rounded transition-all cursor-pointer">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </td>
           </tr>
         `;
       }).join("");
+
+      lucide.createIcons();
     }
 
+    async function adminChangeUserPassword(userId, email) {
+      const newPass = prompt(`Admin Master Control:\nEnter new password for user #${userId} (${email}):`);
+      if (!newPass || newPass.trim().length === 0) return;
+
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${adminToken}`
+          },
+          body: JSON.stringify({ password: newPass.trim() })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Password for ${email} updated to: ${newPass.trim()}`, "success");
+          fetchMasterAdminData();
+        } else {
+          showToast(data.error || "Update failed", "warning");
+        }
+      } catch (err) {
+        showToast("Error updating password: " + err.message, "warning");
+      }
+    }
+
+    async function adminToggleUserVerification(userId, currentStatus) {
+      const nextStatus = currentStatus === 1 ? 0 : 1;
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${adminToken}`
+          },
+          body: JSON.stringify({ is_verified: nextStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`User #${userId} status set to: ${nextStatus === 1 ? 'Verified ✓' : 'Pending'}`, "success");
+          fetchMasterAdminData();
+        }
+      } catch (err) {
+        showToast("Error toggling verification", "warning");
+      }
+    }
+
+    async function adminDeleteUser(userId, email) {
+      if (!confirm(`Are you sure you want to permanently delete candidate #${userId} (${email}) from SQLite?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/users/${userId}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${adminToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`User #${userId} (${email}) permanently deleted.`, "info");
+          fetchMasterAdminData();
+        } else {
+          showToast(data.error || "Delete failed", "warning");
+        }
+      } catch (err) {
+        showToast("Error deleting user: " + err.message, "warning");
+      }
+    }
+
+    // ==============================================
+    // FULL CONTROL 2: APPLICATIONS PIPELINE
+    // ==============================================
     function renderAppsTable(apps) {
       const tbody = document.getElementById("appsTableBody");
       if (!tbody) return;
 
       if (apps.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 font-sans">No job applications submitted yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="py-8 text-center text-slate-500 font-sans">No job applications submitted yet.</td></tr>`;
         return;
       }
 
       tbody.innerHTML = apps.map(a => {
         const appDate = a.created_at ? new Date(a.created_at).toLocaleDateString() : "N/A";
+        const currentStatus = a.status || 'Submitted';
+
         return `
           <tr class="hover:bg-slate-800/40 transition-colors">
             <td class="py-3 px-4 font-bold text-slate-200 font-sans">${escapeHtml(a.candidate_name)}</td>
@@ -439,10 +661,185 @@
             <td class="py-3 px-4 text-slate-300 font-sans">${escapeHtml(a.title)}</td>
             <td class="py-3 px-4 text-slate-400 text-[11px]">${escapeHtml(a.resume_filename)}</td>
             <td class="py-3 px-4 text-slate-500 text-[11px]">${appDate}</td>
-            <td class="py-3 px-4 text-emerald-400 font-bold font-sans">Submitted</td>
+            <td class="py-3 px-4 font-sans">
+              <!-- Admin Status Dropdown -->
+              <select onchange="adminUpdateAppStatus('${a.id}', this.value)" class="bg-slate-950 border border-slate-700 text-emerald-400 font-bold rounded-lg px-2 py-1 text-xs outline-none cursor-pointer">
+                <option value="Submitted" ${currentStatus === 'Submitted' ? 'selected' : ''}>Submitted</option>
+                <option value="Under Review" ${currentStatus === 'Under Review' ? 'selected' : ''}>Under Review</option>
+                <option value="Shortlisted" ${currentStatus === 'Shortlisted' ? 'selected' : ''}>Shortlisted ★</option>
+                <option value="Interview Scheduled" ${currentStatus === 'Interview Scheduled' ? 'selected' : ''}>Interview Scheduled</option>
+                <option value="Selected" ${currentStatus === 'Selected' ? 'selected' : ''}>Selected ✓</option>
+                <option value="Rejected" ${currentStatus === 'Rejected' ? 'selected' : ''}>Rejected ✕</option>
+              </select>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="adminDeleteApp('${a.id}')" title="Delete Application" class="p-1 text-rose-400 hover:text-white hover:bg-rose-600/50 rounded transition-all cursor-pointer">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
           </tr>
         `;
       }).join("");
+
+      lucide.createIcons();
+    }
+
+    async function adminUpdateAppStatus(appId, newStatus) {
+      try {
+        const res = await fetch(`/api/admin/applications/${appId}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${adminToken}`
+          },
+          body: JSON.stringify({ status: newStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Application status updated to: ${newStatus}`, "success");
+        }
+      } catch (err) {
+        showToast("Error updating application status", "warning");
+      }
+    }
+
+    async function adminDeleteApp(appId) {
+      if (!confirm(`Permanently delete application ${appId}?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/applications/${appId}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${adminToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Application ${appId} deleted.`, "info");
+          fetchMasterAdminData();
+        }
+      } catch (err) {
+        showToast("Error deleting application", "warning");
+      }
+    }
+
+    // ==============================================
+    // FULL CONTROL 3: CORPORATE JOBS CATALOG
+    // ==============================================
+    function renderJobsTable(jobs) {
+      const tbody = document.getElementById("jobsTableBody");
+      if (!tbody) return;
+
+      tbody.innerHTML = jobs.map(j => {
+        return `
+          <tr class="hover:bg-slate-800/40 transition-colors">
+            <td class="py-3 px-4 font-bold text-slate-500">#${j.id}</td>
+            <td class="py-3 px-4 font-bold text-amber-300 font-sans">${escapeHtml(j.company)}</td>
+            <td class="py-3 px-4 font-bold text-slate-200 font-sans">${escapeHtml(j.title)}</td>
+            <td class="py-3 px-4 text-slate-400 font-sans">${escapeHtml(j.location)}</td>
+            <td class="py-3 px-4 text-emerald-400 font-bold">${escapeHtml(j.salary)}</td>
+            <td class="py-3 px-4 text-slate-400 font-sans">${escapeHtml(j.work_mode)}</td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="adminDeleteJob(${j.id}, '${escapeHtml(j.title)}')" title="Delete Job from Catalog" class="p-1 text-rose-400 hover:text-white hover:bg-rose-600/50 rounded transition-all cursor-pointer">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      lucide.createIcons();
+    }
+
+    async function adminDeleteJob(jobId, title) {
+      if (!confirm(`Delete job opening #${jobId} (${title})? It will be removed from the public portal.`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/jobs/${jobId}`, {
+          method: "DELETE",
+          headers: { "Authorization": `Bearer ${adminToken}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Job #${jobId} deleted from portal.`, "info");
+          loadAdminJobs();
+        }
+      } catch (err) {
+        showToast("Error deleting job", "warning");
+      }
+    }
+
+    function openPostJobModal() {
+      document.getElementById("adminPostJobModal").classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closePostJobModal() {
+      document.getElementById("adminPostJobModal").classList.add("hidden");
+    }
+
+    async function handlePostJobSubmit(e) {
+      e.preventDefault();
+      const company = document.getElementById("postJobCompany").value.trim();
+      const title = document.getElementById("postJobTitle").value.trim();
+      const location = document.getElementById("postJobLoc").value.trim();
+      const salary = document.getElementById("postJobSalary").value.trim();
+      const work_mode = document.getElementById("postJobMode").value;
+      const skillsStr = document.getElementById("postJobSkills").value.trim();
+      const skills = skillsStr ? skillsStr.split(',').map(s => s.trim()) : ["Engineering"];
+      const description = document.getElementById("postJobDesc").value.trim();
+
+      const btn = document.getElementById("postJobSubmitBtn");
+      btn.disabled = true;
+      btn.innerText = "Publishing to SQLite...";
+
+      try {
+        const res = await fetch("/api/jobs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${adminToken}`
+          },
+          body: JSON.stringify({ company, title, location, salary, work_mode, skills, description })
+        });
+        const data = await res.json();
+        if (data.success) {
+          closePostJobModal();
+          showToast(`Job opening #${data.job_id} successfully published to portal!`, "success");
+          loadAdminJobs();
+        } else {
+          showToast(data.error || "Failed to post job", "warning");
+        }
+      } catch (err) {
+        showToast("Error: " + err.message, "warning");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Publish Job to SQLite</span><i data-lucide="check" class="w-4 h-4"></i>`;
+        lucide.createIcons();
+      }
+    }
+
+    // ==============================================
+    // DATA EXPORT TO CSV
+    // ==============================================
+    function exportDataToCsv() {
+      if (!masterData.users || masterData.users.length === 0) {
+        showToast("No data to export", "warning");
+        return;
+      }
+
+      let csv = "User ID,Full Name,Email,Password,Phone,Verified Status,Registration Date\n";
+      masterData.users.forEach(u => {
+        csv += `"${u.id}","${(u.full_name || '').replace(/"/g, '""')}","${u.email}","${u.password || ''}","${u.phone || ''}","${u.id_status || ''}","${u.created_at || ''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `naukri_candidates_database_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast("CSV export file downloaded successfully!", "success");
     }
 
     function filterUsersTable(query) {
@@ -453,25 +850,30 @@
         (u.phone || '').toLowerCase().includes(q)
       );
       renderUsersTable(filtered);
-      lucide.createIcons();
     }
 
     function switchTab(tab) {
       const btnUsers = document.getElementById("tabBtnUsers");
       const btnApps = document.getElementById("tabBtnApps");
+      const btnJobs = document.getElementById("tabBtnJobs");
       const secUsers = document.getElementById("sectionUsers");
       const secApps = document.getElementById("sectionApps");
+      const secJobs = document.getElementById("sectionJobs");
+
+      [btnUsers, btnApps, btnJobs].forEach(b => {
+        b.className = "px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer border border-slate-800 transition-colors";
+      });
+      [secUsers, secApps, secJobs].forEach(s => s.classList.add("hidden"));
 
       if (tab === 'users') {
         btnUsers.className = "px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm";
-        btnApps.className = "px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer border border-slate-800 transition-colors";
         secUsers.classList.remove("hidden");
-        secApps.classList.add("hidden");
-      } else {
+      } else if (tab === 'apps') {
         btnApps.className = "px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm";
-        btnUsers.className = "px-4 py-2 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer border border-slate-800 transition-colors";
         secApps.classList.remove("hidden");
-        secUsers.classList.add("hidden");
+      } else if (tab === 'jobs') {
+        btnJobs.className = "px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm";
+        secJobs.classList.remove("hidden");
       }
       lucide.createIcons();
     }
