@@ -751,6 +751,10 @@ server.mount_proc('/') do |req, res|
                        '/admin.html'
                      elsif clean_path == '/job' || clean_path == '/job.html' || clean_path.start_with?('/job-listings')
                        '/job.html'
+                     elsif clean_path == '/profile' || clean_path == '/profile.html' || clean_path.start_with?('/mnjuser')
+                       '/profile.html'
+                     elsif clean_path == '/prepare' || clean_path == '/prepare.html' || clean_path.start_with?('/campus')
+                       '/prepare.html'
                      else
                        path
                      end
